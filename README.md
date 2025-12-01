@@ -1,9 +1,12 @@
-# Wait A Sec (3.0 CE)
-"Hold up a second I need to do something"
+# Custom Spawn (3.0 CE)
 
-*proceed to stop the immutable flow of time\*
+WIP Addon
 
-This addon allow you to pause the game while you're in an inventory
+This addon allow you configure which biome you want (or don't want) to spawn into, and also let you increase the searching range.
+
+Add a way a specify a single biome you want to spawn in (doesn't 100% work)
+
+**Everything get configured in the config file created on first launch.**
 
 ## Download: 
-https://github.com/BTW-Community/Wait-A-Second/releases
+https://github.com/BTW-Community/Custom-Spawn/releases
