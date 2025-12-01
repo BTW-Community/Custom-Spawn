@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "custom_spawn",
+  "version": "${version}",
+  "name": "Custom Spawn",
+  "description": "Lets you configure your ideal initial spawn location",
+  "authors": [
+    "DraViGen"
+  ],
+  "contact": {
+    "homepage": "https://github.com/DraViGen",
+    "sources": "https://github.com/BTW-Community/Custom_Spawn"
+  },
+  "license": "CC-BY-4.0",
+  "icon": "assets/custom_spawn/icon.jpg",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.dravigen.custom_spawn.CustomSpawnMod"
+    ],
+    "btw:addon": [
+      "net.dravigen.custom_spawn.CustomSpawnAddon"
+    ]
+  },
+  "custom": {
+    "btw:addon_prefix": "EX"
+  },
+  "mixins": [
+    "custom_spawn.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.19",
+    "minecraft": "1.6.4"
+  }
+}

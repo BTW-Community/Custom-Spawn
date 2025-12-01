@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.dravigen.custom_spawn.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "WorldChunkManagerMixin",
+    "WorldServerMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
