@@ -5,7 +5,9 @@ import btw.BTWAddon;
 import btw.util.hardcorespawn.HardcoreSpawnUtils;
 import net.minecraft.src.BiomeGenBase;
 
-import java.util.ArrayList;
+import java.util.*;
+
+import static net.dravigen.custom_spawn.ConfigUtils.*;
 
 public class CustomSpawnAddon extends BTWAddon {
     private static CustomSpawnAddon instance;
@@ -16,19 +18,67 @@ public class CustomSpawnAddon extends BTWAddon {
 	
 	public static ArrayList<BiomeGenBase> spawneableBiomes = new ArrayList<>();
 	public static ArrayList<BiomeGenBase> unSpawneableBiomes = new ArrayList<>();
+	public static ArrayList<BiomeGenBase> wantedBiomesInSpawn = new ArrayList<>();
+	public static ArrayList<BiomeGenBase> unwantedBiomesInSpawn = new ArrayList<>();
+	public static Map<BiomeGenBase, Integer> biomesWithPriority = new HashMap<>();
 	public static BiomeGenBase onlyBiome = null;
 	public static int range;
 
-    @Override
+	public static Set<String> allBiomeFound = new TreeSet<>();
+	public static Set<String> wantedBiomesFound = new TreeSet<>();
+	public static Set<String> unwantedBiomesFound = new TreeSet<>();
+	
+	
+	@Override
     public void initialize() {
         AddonHandler.logMessage(this.getName() + " Version " + this.getVersionString() + " Initializing...");
     
-		ConfigUtils.loadFromFile();
+		loadFromFile();
+		
+		String onlyBiomeName = getString(onlyBiomeKey);
+		String[] wantedBiomes = properties.getProperty(wantedBiomesInSpawnKey, "").split(",");
+		String[] unwantedBiomes = properties.getProperty(unwantedBiomesInSpawnKey, "").split(",");
 		
 		for (BiomeGenBase biome : BiomeGenBase.biomeList) {
 			if (biome == null) continue;
 			
-			if (!Boolean.parseBoolean((String) ConfigUtils.properties.get(biome.biomeName.replace(" ", "_")))) {
+			if (!onlyBiomeName.isEmpty()) {
+				if (biome.biomeName.equals(onlyBiomeName)) {
+					onlyBiome = biome;
+				}
+			}
+			
+			for (String wantedBiome : wantedBiomes) {
+				String name = wantedBiome;
+				String score = "1";
+				
+				if (wantedBiome.split(":").length == 2) {
+					name = wantedBiome.split(":")[0];
+					score = wantedBiome.split(":")[1];
+				}
+
+				if (biome.biomeName.replace(" ", "_").equals(name)) {
+					wantedBiomesInSpawn.add(biome);
+					biomesWithPriority.put(biome, Integer.parseInt(score));
+				}
+			}
+			
+			for (String unwantedBiome : unwantedBiomes) {
+				String name = unwantedBiome;
+				String score = "1";
+				
+				if (unwantedBiome.split(":").length == 2) {
+					name = unwantedBiome.split(":")[0];
+					score = unwantedBiome.split(":")[1];
+				}
+				
+				if (biome.biomeName.replace(" ", "_").equals(name)) {
+					unwantedBiomesInSpawn.add(biome);
+					biomesWithPriority.put(biome, -Integer.parseInt(score));
+				}
+			}
+			
+			if (getBool(biome.biomeName.replace(" ", "_"))) {
 				spawneableBiomes.add(biome);
 			}
 			else {
@@ -36,18 +86,10 @@ public class CustomSpawnAddon extends BTWAddon {
 			}
 		}
 		
-		String onlyBiomeName = ConfigUtils.properties.getProperty("onlyBiome");
+		range = getInt(rangeKey);
 		
-		if (!onlyBiomeName.isEmpty()) {
-			for (BiomeGenBase biomeGenBase : BiomeGenBase.biomeList) {
-				if (biomeGenBase != null && biomeGenBase.biomeName.equals(onlyBiomeName)) {
-					onlyBiome = biomeGenBase;
-				}
-			}
+		if (getBool(affectHRKey)) {
+			HardcoreSpawnUtils.blacklistedBiomes = unSpawneableBiomes;
 		}
-		
-		range = Integer.parseInt(ConfigUtils.properties.getProperty("range"));
-		
-		HardcoreSpawnUtils.blacklistedBiomes = unSpawneableBiomes;
 	}
 }

@@ -4,8 +4,8 @@
   "package": "net.dravigen.custom_spawn.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "WorldChunkManagerMixin",
-    "WorldServerMixin"
+    "ServerConfigurationManagerMixin",
+    "WorldChunkManagerMixin"
   ],
   "client": [
   ],
