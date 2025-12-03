@@ -18,6 +18,8 @@ public abstract class ServerConfigurationManagerMixin {
 	@Inject(method = "initializeConnectionToPlayer", at = @At(value = "INVOKE", target = "Lbtw/AddonHandler;serverPlayerConnectionInitialized(Lnet/minecraft/src/NetServerHandler;Lnet/minecraft/src/EntityPlayerMP;)V", shift = At.Shift.AFTER))
 	private void sendFoundBiomesInSpawn(INetworkManager par1INetworkManager, EntityPlayerMP mp,
 			CallbackInfo ci) {
+		if (allBiomeFound.isEmpty() && wantedBiomesFound.isEmpty() && unwantedBiomesFound.isEmpty()) return;
+		
 		Set<String> wantedList = new TreeSet<>();
 		Set<String> unwantedList = new TreeSet<>();
 		
@@ -49,6 +51,9 @@ public abstract class ServerConfigurationManagerMixin {
 						")", mp, EnumChatFormatting.AQUA);
 		sendMsg(allBiomeFound.toString(), mp);
 		
+		allBiomeFound.clear();
+		wantedBiomesFound.clear();
+		unwantedBiomesFound.clear();
 	}
 	
 	@Unique
