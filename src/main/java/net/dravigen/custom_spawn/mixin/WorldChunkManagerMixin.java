@@ -49,84 +49,91 @@ public abstract class WorldChunkManagerMixin {
 		
 		final int CHUNK_SIZE_BLOCKS = 16;
 		final int EVALUATION_CHUNK_WIDTH = 17;
-		
 		final int EVALUATION_HALF_WIDTH = (EVALUATION_CHUNK_WIDTH * CHUNK_SIZE_BLOCKS) / 2;
-		
 		final int SCAN_STEP = EVALUATION_CHUNK_WIDTH * CHUNK_SIZE_BLOCKS;
 		
 		ChunkPosition bestGlobalPosition = null;
 		int highestGlobalScore = -1;
+		boolean foundBestSpawn = false;
 		
-		int scanMinX = originX - searchRadius;
-		int scanMaxX = originX + searchRadius;
-		int scanMinZ = originZ - searchRadius;
-		int scanMaxZ = originZ + searchRadius;
-		
-		for (int potentialCenterX = scanMinX; potentialCenterX <= scanMaxX; potentialCenterX += SCAN_STEP) {
-			for (int potentialCenterZ = scanMinZ; potentialCenterZ <= scanMaxZ; potentialCenterZ += SCAN_STEP) {
-				int centerBiomeX = potentialCenterX >> 2;
-				int centerBiomeZ = potentialCenterZ >> 2;
+		for (int r = 0; r <= searchRadius; r += SCAN_STEP) {
+			if (foundBestSpawn) break;
+			
+			int limitedScanXMin = originX - r;
+			int limitedScanXMax = originX + r;
+			int limitedScanZMin = originZ - r;
+			int limitedScanZMax = originZ + r;
+			
+			for (int potentialCenterX = limitedScanXMin; potentialCenterX <= limitedScanXMax; potentialCenterX += SCAN_STEP) {
+				if (foundBestSpawn) break;
 				
-				int centerBiomeInt = this.genBiomes.getInts(centerBiomeX, centerBiomeZ, 1, 1)[0];
-				BiomeGenBase centerBiome = BiomeGenBase.biomeList[centerBiomeInt];
-				
-				if (!spawneableBiomes.contains(centerBiome) || onlyBiome != null && onlyBiome != centerBiome) {
-					continue;
-				}
-				
-				int minBiomeX = potentialCenterX - EVALUATION_HALF_WIDTH >> 2;
-				int minBiomeZ = potentialCenterZ - EVALUATION_HALF_WIDTH >> 2;
-				
-				int maxBiomeX = potentialCenterX + EVALUATION_HALF_WIDTH >> 2;
-				int maxBiomeZ = potentialCenterZ + EVALUATION_HALF_WIDTH >> 2;
-				
-				int mapWidth = maxBiomeX - minBiomeX + 1;
-				int mapHeight = maxBiomeZ - minBiomeZ + 1;
-				
-				int[] biomeInts = this.genBiomes.getInts(minBiomeX, minBiomeZ, mapWidth, mapHeight);
-				
-				Set<BiomeGenBase> foundBiomes = new HashSet<>();
-				
-				allBiomeFound.clear();
-				wantedBiomesFound.clear();
-				unwantedBiomesFound.clear();
-				
-				for (int mapIndex = 0; mapIndex < mapWidth * mapHeight; ++mapIndex) {
-					BiomeGenBase currentBiome = BiomeGenBase.biomeList[biomeInts[mapIndex]];
+				for (int potentialCenterZ = limitedScanZMin; potentialCenterZ <= limitedScanZMax; potentialCenterZ += SCAN_STEP) {
+					if (foundBestSpawn) break;
 					
-					if (wantedBiomesInSpawn.contains(currentBiome)) {
-						foundBiomes.add(currentBiome);
-						wantedBiomesFound.add(currentBiome.biomeName);
+					if (r > 0) {
+						boolean isOnXEdge = (potentialCenterX == limitedScanXMin || potentialCenterX == limitedScanXMax);
+						boolean isOnZEdge = (potentialCenterZ == limitedScanZMin || potentialCenterZ == limitedScanZMax);
+						
+						if (!isOnXEdge && !isOnZEdge) {
+							continue;
+						}
 					}
-					else if (unwantedBiomesInSpawn.contains(currentBiome)) {
-						foundBiomes.add(currentBiome);
-						unwantedBiomesFound.add(currentBiome.biomeName);
-					}
-					else {
-						allBiomeFound.add(currentBiome.biomeName);
-					}
-				}
-				
-				int currentDiversityScore = 0;
-				int maxScore = 0;
-				
-				for (BiomeGenBase wantedBiomes : wantedBiomesInSpawn) {
-					maxScore += biomesWithPriority.get(wantedBiomes);
-				}
-				
-				for (BiomeGenBase biomeGenBase : foundBiomes) {
-					currentDiversityScore += biomesWithPriority.get(biomeGenBase);
-				}
-				
-				if (currentDiversityScore > highestGlobalScore ||
-						(currentDiversityScore == highestGlobalScore && random.nextInt(2) == 0)) {
 					
-					highestGlobalScore = currentDiversityScore;
-					bestGlobalPosition = new ChunkPosition(potentialCenterX, 0, potentialCenterZ);
-				}
-				
-				if (currentDiversityScore == maxScore) {
-					return bestGlobalPosition;
+					int centerBiomeX = potentialCenterX >> 2;
+					int centerBiomeZ = potentialCenterZ >> 2;
+					
+					int centerBiomeInt = this.genBiomes.getInts(centerBiomeX, centerBiomeZ, 1, 1)[0];
+					BiomeGenBase centerBiome = BiomeGenBase.biomeList[centerBiomeInt];
+					
+					if (!spawneableBiomes.contains(centerBiome) || onlyBiome != null && onlyBiome != centerBiome) {
+						continue;
+					}
+					
+					int minBiomeX = potentialCenterX - EVALUATION_HALF_WIDTH >> 2;
+					int minBiomeZ = potentialCenterZ - EVALUATION_HALF_WIDTH >> 2;
+					
+					int maxBiomeX = potentialCenterX + EVALUATION_HALF_WIDTH >> 2;
+					int maxBiomeZ = potentialCenterZ + EVALUATION_HALF_WIDTH >> 2;
+					
+					int mapWidth = maxBiomeX - minBiomeX + 1;
+					int mapHeight = maxBiomeZ - minBiomeZ + 1;
+					
+					int[] biomeInts = this.genBiomes.getInts(minBiomeX, minBiomeZ, mapWidth, mapHeight);
+					
+					Set<BiomeGenBase> foundBiomes = new HashSet<>();
+					
+					for (int mapIndex = 0; mapIndex < mapWidth * mapHeight; ++mapIndex) {
+						BiomeGenBase currentBiome = BiomeGenBase.biomeList[biomeInts[mapIndex]];
+						
+						if (wantedBiomesInSpawn.contains(currentBiome)) {
+							foundBiomes.add(currentBiome);
+						}
+						else if (unwantedBiomesInSpawn.contains(currentBiome)) {
+							foundBiomes.add(currentBiome);
+						}
+					}
+					
+					int currentDiversityScore = 0;
+					int maxScore = 0;
+					
+					for (BiomeGenBase wantedBiomes : wantedBiomesInSpawn) {
+						maxScore += biomesWithPriority.get(wantedBiomes);
+					}
+					
+					for (BiomeGenBase biomeGenBase : foundBiomes) {
+						currentDiversityScore += biomesWithPriority.get(biomeGenBase);
+					}
+					
+					if (currentDiversityScore > highestGlobalScore ||
+							(currentDiversityScore == highestGlobalScore && random.nextInt(2) == 0)) {
+						
+						highestGlobalScore = currentDiversityScore;
+						bestGlobalPosition = new ChunkPosition(potentialCenterX, 0, potentialCenterZ);
+					}
+					
+					if (currentDiversityScore == maxScore) {
+						foundBestSpawn = true;
+					}
 				}
 			}
 		}
@@ -142,10 +149,6 @@ public abstract class WorldChunkManagerMixin {
 			int mapHeight = maxBiomeZ - minBiomeZ + 1;
 			
 			int[] biomeInts = this.genBiomes.getInts(minBiomeX, minBiomeZ, mapWidth, mapHeight);
-			
-			allBiomeFound.clear();
-			wantedBiomesFound.clear();
-			unwantedBiomesFound.clear();
 			
 			for (int mapIndex = 0; mapIndex < mapWidth * mapHeight; ++mapIndex) {
 				BiomeGenBase currentBiome = BiomeGenBase.biomeList[biomeInts[mapIndex]];

@@ -23,11 +23,12 @@ public class CustomSpawnAddon extends BTWAddon {
 	public static Map<BiomeGenBase, Integer> biomesWithPriority = new HashMap<>();
 	public static BiomeGenBase onlyBiome = null;
 	public static int range;
-
+	
 	public static Set<String> allBiomeFound = new TreeSet<>();
 	public static Set<String> wantedBiomesFound = new TreeSet<>();
 	public static Set<String> unwantedBiomesFound = new TreeSet<>();
 	
+	public static int loadingProgress = 0;
 	
 	@Override
     public void initialize() {
