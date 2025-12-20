@@ -7,7 +7,8 @@
     "LoadingScreenRendererMixin",
     "MinecraftServerMixin",
     "ServerConfigurationManagerMixin",
-    "WorldChunkManagerMixin"
+    "WorldChunkManagerMixin",
+    "WorldProviderMixin"
   ],
   "client": [
   ],

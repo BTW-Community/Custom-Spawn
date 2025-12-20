@@ -15,7 +15,7 @@ import static net.dravigen.custom_spawn.CustomSpawnAddon.*;
 @Mixin(ServerConfigurationManager.class)
 public abstract class ServerConfigurationManagerMixin {
 	
-	@Inject(method = "initializeConnectionToPlayer", at = @At(value = "INVOKE", target = "Lbtw/AddonHandler;serverPlayerConnectionInitialized(Lnet/minecraft/src/NetServerHandler;Lnet/minecraft/src/EntityPlayerMP;)V", shift = At.Shift.AFTER))
+	@Inject(method = "initializeConnectionToPlayer", at = @At(value = "INVOKE", target = "Lapi/AddonHandler;serverPlayerConnectionInitialized(Lnet/minecraft/src/NetServerHandler;Lnet/minecraft/src/EntityPlayerMP;)V", shift = At.Shift.AFTER))
 	private void sendFoundBiomesInSpawn(INetworkManager par1INetworkManager, EntityPlayerMP mp,
 			CallbackInfo ci) {
 		if (allBiomeFound.isEmpty() && wantedBiomesFound.isEmpty() && unwantedBiomesFound.isEmpty()) return;
@@ -24,26 +24,24 @@ public abstract class ServerConfigurationManagerMixin {
 		Set<String> unwantedList = new TreeSet<>();
 		
 		for (BiomeGenBase unwantedBiome : unwantedBiomesInSpawn) {
-			unwantedList.add(unwantedBiome.biomeName);
+			unwantedList.add((unwantedBiomesFound.contains(unwantedBiome.biomeName) ? "§4" : "§7") + unwantedBiome.biomeName + "§f");
 		}
 		for (BiomeGenBase wantedBiome : wantedBiomesInSpawn) {
-			wantedList.add(wantedBiome.biomeName);
+			wantedList.add((wantedBiomesFound.contains(wantedBiome.biomeName) ? "§2" : "§7") + wantedBiome.biomeName + "§f");
 		}
 		
 		sendMsg("", mp);
 		sendMsg("Wanted Biomes Found: (" + wantedBiomesFound.size() + "/" + wantedBiomesInSpawn.size() + ")",
 				mp,
 				EnumChatFormatting.GREEN);
-		sendMsg(wantedBiomesFound.toString() + " /", mp);
-		sendMsg("§2" + wantedList, mp);
+		sendMsg(wantedList.toString(), mp);
 		
 		sendMsg("", mp);
 		sendMsg("Unwanted Biomes Found: (" + unwantedBiomesFound.size() + "/" + unwantedBiomesInSpawn.size() + ")",
 				mp,
 				EnumChatFormatting.RED);
 	
-		sendMsg(unwantedBiomesFound.toString() + " /", mp);
-		sendMsg("§4" + unwantedList, mp);
+		sendMsg(unwantedList.toString(), mp);
 		
 		sendMsg("", mp);
 		sendMsg("Other Biomes Found: (" +

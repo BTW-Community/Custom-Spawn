@@ -50,7 +50,7 @@ public abstract class WorldChunkManagerMixin {
 		final int CHUNK_SIZE_BLOCKS = 16;
 		final int EVALUATION_CHUNK_WIDTH = 17;
 		final int EVALUATION_HALF_WIDTH = (EVALUATION_CHUNK_WIDTH * CHUNK_SIZE_BLOCKS) / 2;
-		final int SCAN_STEP = EVALUATION_CHUNK_WIDTH * CHUNK_SIZE_BLOCKS;
+		final int SCAN_STEP = scanStep;
 		
 		ChunkPosition bestGlobalPosition = null;
 		int highestGlobalScore = -1;
@@ -85,7 +85,7 @@ public abstract class WorldChunkManagerMixin {
 					int centerBiomeInt = this.genBiomes.getInts(centerBiomeX, centerBiomeZ, 1, 1)[0];
 					BiomeGenBase centerBiome = BiomeGenBase.biomeList[centerBiomeInt];
 					
-					if (!spawneableBiomes.contains(centerBiome) || onlyBiome != null && onlyBiome != centerBiome) {
+					if (!spawneableBiomes.contains(centerBiome) && onlyBiome == null || onlyBiome != null && onlyBiome != centerBiome) {
 						continue;
 					}
 					
@@ -154,13 +154,13 @@ public abstract class WorldChunkManagerMixin {
 				BiomeGenBase currentBiome = BiomeGenBase.biomeList[biomeInts[mapIndex]];
 				
 				if (wantedBiomesInSpawn.contains(currentBiome)) {
-					wantedBiomesFound.add(currentBiome.biomeName);
+					wantedBiomesFound.add(currentBiome.biomeName.replace(" ", ""));
 				}
 				else if (unwantedBiomesInSpawn.contains(currentBiome)) {
-					unwantedBiomesFound.add(currentBiome.biomeName);
+					unwantedBiomesFound.add(currentBiome.biomeName.replace(" ", ""));
 				}
 				else {
-					allBiomeFound.add(currentBiome.biomeName);
+					allBiomeFound.add(currentBiome.biomeName.replace(" ", ""));
 				}
 			}
 		}
