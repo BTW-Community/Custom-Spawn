@@ -24,10 +24,10 @@ public abstract class ServerConfigurationManagerMixin {
 		Set<String> unwantedList = new TreeSet<>();
 		
 		for (BiomeGenBase unwantedBiome : unwantedBiomesInSpawn) {
-			unwantedList.add((unwantedBiomesFound.contains(unwantedBiome.biomeName) ? "§4" : "§7") + unwantedBiome.biomeName + "§f");
+			unwantedList.add((unwantedBiomesFound.contains(unwantedBiome.biomeName.replace(" ", "")) ? "§4" : "§7") + unwantedBiome.biomeName + "§f");
 		}
 		for (BiomeGenBase wantedBiome : wantedBiomesInSpawn) {
-			wantedList.add((wantedBiomesFound.contains(wantedBiome.biomeName) ? "§2" : "§7") + wantedBiome.biomeName + "§f");
+			wantedList.add((wantedBiomesFound.contains(wantedBiome.biomeName.replace(" ", "")) ? "§2" : "§7") + wantedBiome.biomeName + "§f");
 		}
 		
 		sendMsg("", mp);
