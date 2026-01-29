@@ -1,6 +1,8 @@
 package net.dravigen.custom_spawn.mixin;
 
 import net.dravigen.custom_spawn.CustomSpawnAddon;
+import net.dravigen.custom_spawn.config.ConfigUtils;
+import net.dravigen.custom_spawn.config.DVS_ConfigManager;
 import net.minecraft.src.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -31,7 +33,6 @@ public abstract class WorldChunkManagerMixin {
 			cir.setReturnValue(findBestSpawnLocationWithBiomesCriteria(x,
 																	   z,
 																	   CustomSpawnAddon.range,
-																	   spawneableBiomes,
 																	   wantedBiomesInSpawn,
 																	   unwantedBiomesInSpawn,
 																	   rand));
@@ -40,7 +41,7 @@ public abstract class WorldChunkManagerMixin {
 	
 	
 	@Unique
-	public ChunkPosition findBestSpawnLocationWithBiomesCriteria(int originX, int originZ, int searchRadius, List<BiomeGenBase> spawneableBiomes, List<BiomeGenBase> wantedBiomesInSpawn, List<BiomeGenBase> unwantedBiomesInSpawn, Random random) {
+	public ChunkPosition findBestSpawnLocationWithBiomesCriteria(int originX, int originZ, int searchRadius, List<BiomeGenBase> wantedBiomesInSpawn, List<BiomeGenBase> unwantedBiomesInSpawn, Random random) {
 		IntCache.resetIntCache();
 		
 		allBiomeFound.clear();
@@ -48,14 +49,18 @@ public abstract class WorldChunkManagerMixin {
 		unwantedBiomesFound.clear();
 		
 		final int CHUNK_SIZE_BLOCKS = 16;
-		final int EVALUATION_CHUNK_WIDTH = 17;
+		final int EVALUATION_CHUNK_WIDTH = 12;
 		final int EVALUATION_HALF_WIDTH = (EVALUATION_CHUNK_WIDTH * CHUNK_SIZE_BLOCKS) / 2;
 		final int SCAN_STEP = scanStep;
 		
 		ChunkPosition bestGlobalPosition = null;
 		int highestGlobalScore = -1;
 		boolean foundBestSpawn = false;
+		int maxScore = 0;
 		
+		for (BiomeGenBase wantedBiomes : wantedBiomesInSpawn) {
+			maxScore += biomesWithPriority.get(wantedBiomes);
+		}
 		for (int r = 0; r <= searchRadius; r += SCAN_STEP) {
 			if (foundBestSpawn) break;
 			
@@ -85,7 +90,7 @@ public abstract class WorldChunkManagerMixin {
 					int centerBiomeInt = this.genBiomes.getInts(centerBiomeX, centerBiomeZ, 1, 1)[0];
 					BiomeGenBase centerBiome = BiomeGenBase.biomeList[centerBiomeInt];
 					
-					if (!spawneableBiomes.contains(centerBiome) && onlyBiome == null || onlyBiome != null && onlyBiome != centerBiome) {
+					if (!DVS_ConfigManager.getBoolean(centerBiome.biomeName.replace(" ", "")) && onlyBiome == null || onlyBiome != null && onlyBiome != centerBiome) {
 						continue;
 					}
 					
@@ -105,20 +110,15 @@ public abstract class WorldChunkManagerMixin {
 					for (int mapIndex = 0; mapIndex < mapWidth * mapHeight; ++mapIndex) {
 						BiomeGenBase currentBiome = BiomeGenBase.biomeList[biomeInts[mapIndex]];
 						
-						if (wantedBiomesInSpawn.contains(currentBiome)) {
+						if (DVS_ConfigManager.getString(ConfigUtils.wantedBiomesInSpawnKey).split(",")[0].split(":")[0].equalsIgnoreCase(currentBiome.biomeName.replace(" ", ""))) {
 							foundBiomes.add(currentBiome);
 						}
-						else if (unwantedBiomesInSpawn.contains(currentBiome)) {
+						else if (DVS_ConfigManager.getString(ConfigUtils.unwantedBiomesInSpawnKey).split(",")[0].split(":")[0].equalsIgnoreCase(currentBiome.biomeName.replace(" ", ""))) {
 							foundBiomes.add(currentBiome);
 						}
 					}
 					
 					int currentDiversityScore = 0;
-					int maxScore = 0;
-					
-					for (BiomeGenBase wantedBiomes : wantedBiomesInSpawn) {
-						maxScore += biomesWithPriority.get(wantedBiomes);
-					}
 					
 					for (BiomeGenBase biomeGenBase : foundBiomes) {
 						currentDiversityScore += biomesWithPriority.get(biomeGenBase);

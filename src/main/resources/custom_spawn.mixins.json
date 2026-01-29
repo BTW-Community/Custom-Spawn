@@ -11,6 +11,7 @@
     "WorldProviderMixin"
   ],
   "client": [
+    "GuiCreateWorldMixin"
   ],
   "injectors": {
     "defaultRequire": 1
