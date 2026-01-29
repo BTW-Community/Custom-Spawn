@@ -43,8 +43,7 @@ public class ConfigUpdater {
 			Config updatedConfig = currentConfig.withValue(path, newValueWithOrigin);
 			configField.set(addonConfig, updatedConfig);
 			
-			saveConfig(addonConfig);
-			
+			ConfigUtils.updateInternalConfigs();
 		}
 		catch (Exception e) {
 			System.err.println("[ConfigUpdater] Critical error updating " + path);

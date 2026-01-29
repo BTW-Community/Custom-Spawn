@@ -1,8 +1,11 @@
 package net.dravigen.custom_spawn.config;
 
+import api.config.AddonConfig;
 import btw.util.hardcorespawn.HardcoreSpawnUtils;
 import net.dravigen.custom_spawn.CustomSpawnAddon;
 import net.minecraft.src.BiomeGenBase;
+
+import java.util.*;
 
 public class ConfigUtils {
 	public static final String suitableBiomesKey = "suitable-biomes";
@@ -13,134 +16,147 @@ public class ConfigUtils {
 	public static final String scanStepKey = "stepScan";
 	public static final String affectHRKey = "affect-HR";
 	
-	private static final String category = "Suitable Biomes";
-	
-	public static void registerAllSettings() {
-		for (BiomeGenBase biome : CustomSpawnAddon.allBiomes) {
-			String name = biome.biomeName.replace(" ", "");
-			boolean defaultValue = !HardcoreSpawnUtils.blacklistedBiomes.contains(biome);
-			
-			DVS_ConfigManager.registerBool(name, name, defaultValue, "Can player spawn in: " + name, category);
-		}
-		
-		DVS_ConfigManager.registerString(wantedBiomesInSpawnKey, "Wanted Biomes in Spawn", "none", "List of every biomes that should be in Spawn", "");
-		
-		DVS_ConfigManager.registerString(unwantedBiomesInSpawnKey, "Unwanted Biomes in Spawn", "none", "List of every biomes that should NOT be in Spawn", "");
-		
-		DVS_ConfigManager.registerString(onlyBiomeKey, "Spawn Only In Biome", "none", "", "");
-		
-		DVS_ConfigManager.registerInt(rangeKey, "Scan Range", 2048, 512, 8192, "", "");
-		
-		DVS_ConfigManager.registerInt(scanStepKey, "Scan Interval", 64, 1, 256, "How many block are skipped before attempting another spawn", "");
-		
-		DVS_ConfigManager.registerBool(affectHRKey, "Affect Hardcore Respawn", false, "Should the suitable biome list impact hardcore respawn", "");
-		
-	}
-
-	
-	
-	
-	/*
+	private static final Map<String, Object> configValues = new HashMap<>();
 	
 	private static final List<BaseSetting> settings = new ArrayList<>();
 	
-	public static void registerConfigs(AddonConfig config) {
-		for (BiomeGenBase biome : CustomSpawnAddon.allBiomes) {
-			String name = biome.biomeName.replace(" ", "");
-			String path = suitableBiomesKey + "." + name;
-			boolean defaultValue = !HardcoreSpawnUtils.blacklistedBiomes.contains(biome);
-			
-			config.registerBoolean(path, defaultValue);
-			registerSetting(path, Type.BOOLEAN, name, defaultValue, 0, 8, "Can player spawn in: " + name, "Suitable Biomes", config.getBoolean(path));
-		}
-		
-		config.registerCategoryComment(suitableBiomesKey, "Suitable biomes for player's spawn");
-		
-		config.registerString(onlyBiomeKey,
-							  "none",
-							  "Player only spawn in this biome (if used, the suitable biomes list is ignored");
-		registerSetting(onlyBiomeKey, Type.STRING, "Spawn Only In Biome", "", 0, 8, "The only biome the player can spawn in", "", config.getString(onlyBiomeKey));
+	public static List<BaseSetting> getSettings() {
+		return settings;
+	}
 	
+	public static void registerConfigs(AddonConfig config) {
 		config.registerString(wantedBiomesInSpawnKey,
 							  "none",
 							  "List of every biome you would want in spawn's chunks with associated score (higher score mean that potential spawn is more likely to get picked over another).",
 							  "Example: \"Jungle:10,Swampland:10,Forest:5\"");
-		registerSetting(wantedBiomesInSpawnKey, Type.STRING, "Wanted Biomes in Spawn", "", 0, 8, "List of every biomes that should be in Spawn", "", config.getString(wantedBiomesInSpawnKey));
+		register(wantedBiomesInSpawnKey, Type.MUL_STRING, "Wanted Biomes in Spawn", "none", 0, 8, "List of every biomes that should be in Spawn", "1.Wanted Biomes");
 		
 		config.registerString(unwantedBiomesInSpawnKey,
 							  "none",
 							  "List of every biome you wouldn't want in spawn's chunks (higher score means that the presence of that biome will make that potential spawn less likely to get picked).",
 							  "Example: \"Ice_Plains:5,Ocean:10\"");
-		registerSetting(unwantedBiomesInSpawnKey, Type.STRING, "Unwanted Biomes in Spawn", "", 0, 8, "List of every biomes that should NOT be in Spawn", "", config.getString(unwantedBiomesInSpawnKey));
+		register(unwantedBiomesInSpawnKey, Type.MUL_STRING, "Unwanted Biomes in Spawn", "none", 0, 8, "List of every biomes that should NOT be in Spawn", "2.Unwanted biomes");
 		
-		config.registerInt(rangeKey, 2048, "Range of valid spawn search.");
-		registerSetting(rangeKey, Type.INT, "Search Range", 2048, 512, 8192, "", "", config.getInt(rangeKey));
+		for (BiomeGenBase biome : CustomSpawnAddon.allBiomes) {
+			String name = biome.biomeName.replace(" ", "");
+			String path = suitableBiomesKey + "." + name;
+			boolean defaultValue = !HardcoreSpawnUtils.blacklistedBiomes.contains(biome);
+			
+			config.registerString(path, String.valueOf(defaultValue));
+			register(path, Type.BOOLEAN, name, defaultValue, 0, 8, "Player can spawn in: " + name, "3.Suitable Biomes");
+		}
 		
-		config.registerInt(scanStepKey, 68, "Distance in blocks between each spawn attempt.");
-		registerSetting(scanStepKey, Type.INT, "Scan Interval", 68, 1, 256, "How many block are skipped before attempting another spawn", "", config.getInt(scanStepKey));
+		config.registerString(onlyBiomeKey,
+							  "none",
+							  "Player only spawn in this biome (if used, the suitable biomes list is ignored");
+		register(onlyBiomeKey, Type.STRING, "Spawn Only In Biome", "none", 0, 8, "The only biome the player should spawn in", "");
 		
-		config.registerBoolean(affectHRKey, false, "Should the biome whitelist affect hardcore respawn.");
-		registerSetting(affectHRKey, Type.BOOLEAN, "Affect Hardcore Respawn", false, 0, 8, "Should the suitable biome list impact hardcore respawn", "", config.getBoolean(affectHRKey));
+		config.registerString(rangeKey, "2048", "Range of valid spawn search.");
+		register(rangeKey, Type.INT, "Scan Range", 2048, 512, 8192, "Range of valid spawn search", "");
+		
+		config.registerString(scanStepKey, "128", "Distance in blocks between each spawn attempt.");
+		register(scanStepKey, Type.INT, "Scan Interval", 128, 16, 256, "How many block are skipped before attempting another spawn", "");
+		
+		config.registerString(affectHRKey, "false", "Should the biome whitelist affect hardcore respawn.");
+		register(affectHRKey, Type.BOOLEAN, "Affect Hardcore Respawn", false, 0, 8, "Should the suitable biome list impacts hardcore respawn", "");
 	}
 	
 	public static void reloadConfigs(AddonConfig config) {
-		String onlyBiomeName = config.getString(onlyBiomeKey);
+		for (BaseSetting setting : settings) {
+			if (setting.type() == Type.BOOLEAN) configValues.put(setting.id(), Boolean.parseBoolean(config.getString(setting.id())));
+			else if (setting.type() == Type.INT) configValues.put(setting.id(), Integer.parseInt(config.getString(setting.id())));
+			else if (setting.type() == Type.STRING) configValues.put(setting.id(), config.getString(setting.id()));
+			else if (setting.type() == Type.MUL_STRING) configValues.put(setting.id(), config.getString(setting.id()));
+		}
 		
-		String[] wantedBiomes = config.getString(wantedBiomesInSpawnKey).split(",");
-		String[] unwantedBiomes = config.getString(unwantedBiomesInSpawnKey).split(",");
+		updateInternalConfigs();
+	}
+	
+	public static void updateInternalConfigs() {
+		CustomSpawnAddon.wantedBiomesInSpawn.clear();
+		CustomSpawnAddon.unwantedBiomesInSpawn.clear();
+		CustomSpawnAddon.spawneableBiomes.clear();
+		CustomSpawnAddon.unSpawneableBiomes.clear();
 		
-		for (BiomeGenBase biome : CustomSpawnAddon.allBiomes) {
-			String biomeName = biome.biomeName.replace(" ", "");
-			for (String wantedBiome : wantedBiomes) {
-				String name = wantedBiome;
-				String score = "1";
-				
-				if (wantedBiome.split(":").length == 2) {
-					name = wantedBiome.split(":")[0];
-					score = wantedBiome.split(":")[1];
-				}
-				
-				if (biomeName.equalsIgnoreCase(name)) {
-					CustomSpawnAddon.wantedBiomesInSpawn.add(biome);
-					CustomSpawnAddon.biomesWithPriority.put(biome, Integer.parseInt(score));
-				}
-			}
-			
-			for (String unwantedBiome : unwantedBiomes) {
-				String name = unwantedBiome;
-				String score = "1";
-				
-				if (unwantedBiome.split(":").length == 2) {
-					name = unwantedBiome.split(":")[0];
-					score = unwantedBiome.split(":")[1];
-				}
-				
-				if (biomeName.equalsIgnoreCase(name)) {
-					CustomSpawnAddon.unwantedBiomesInSpawn.add(biome);
-					CustomSpawnAddon.biomesWithPriority.put(biome, -Integer.parseInt(score));
-				}
-			}
-			
-			if (!onlyBiomeName.isEmpty()) {
-				if (biomeName.equalsIgnoreCase(onlyBiomeName)) {
-					CustomSpawnAddon.onlyBiome = biome;
-				}
-			}
-			
-			if (config.getBoolean(suitableBiomesKey + "." + biomeName) || biome == CustomSpawnAddon.onlyBiome) {
-				CustomSpawnAddon.spawneableBiomes.add(biome);
+		String[] splitu = configValues.get(wantedBiomesInSpawnKey).toString().split(",");
+		String[] splitw = configValues.get(unwantedBiomesInSpawnKey).toString().split(",");
+		
+		for (int i = 0; i < splitu.length; i++) {
+			if (i == 0) CustomSpawnAddon.wantedBiomesInSpawn.add(i, "none");
+			else CustomSpawnAddon.wantedBiomesInSpawn.add(i, splitu[i]);
+		}
+		
+		for (int i = 0; i < splitw.length; i++) {
+			if (i == 0) CustomSpawnAddon.unwantedBiomesInSpawn.add(i, "none");
+			else CustomSpawnAddon.unwantedBiomesInSpawn.add(i, splitw[i]);
+		}
+		
+		CustomSpawnAddon.onlyBiome = configValues.get(onlyBiomeKey).toString();
+		
+		for (String biomeName : CustomSpawnAddon.allBiomesName) {
+			if (Boolean.parseBoolean(configValues.get(suitableBiomesKey + "." + biomeName)
+											 .toString()) || biomeName.equalsIgnoreCase(CustomSpawnAddon.onlyBiome)) {
+				CustomSpawnAddon.spawneableBiomes.add(biomeName);
 			}
 			else {
-				CustomSpawnAddon.unSpawneableBiomes.add(biome);
+				CustomSpawnAddon.unSpawneableBiomes.add(biomeName);
 			}
 		}
+	
+		CustomSpawnAddon.range = Integer.parseInt(configValues.get(rangeKey).toString());
 		
-		CustomSpawnAddon.range = config.getInt(rangeKey);
-
-		CustomSpawnAddon.scanStep = config.getInt(scanStepKey);
+		CustomSpawnAddon.scanStep = Integer.parseInt(configValues.get(scanStepKey).toString());
 		
-		if (config.getBoolean(affectHRKey)) {
-			HardcoreSpawnUtils.blacklistedBiomes = CustomSpawnAddon.unSpawneableBiomes;
+		if (Boolean.parseBoolean(configValues.get(affectHRKey).toString())) {
+			ArrayList<BiomeGenBase> biomes = new ArrayList<>();
+			
+			for (BiomeGenBase biome : CustomSpawnAddon.allBiomes) {
+				if (CustomSpawnAddon.unSpawneableBiomes.contains(biome.biomeName.replace(" ", ""))) {
+					biomes.add(biome);
+				}
+			}
+			
+			HardcoreSpawnUtils.blacklistedBiomes = biomes;
 		}
-	}*/
+	}
+	
+	public static int getInt(String id) {
+		return (int) configValues.get(id);
+	}
+	
+	public static double getDouble(String id) {
+		return (double) configValues.get(id);
+	}
+	
+	public static boolean getBoolean(String id) {
+		return (boolean) configValues.get(id);
+	}
+	
+	public static String getString(String id) {
+		return (String) configValues.get(id);
+	}
+	
+	public static void setValue(String id, Object value) {
+		if (configValues.containsKey(id)) {
+			configValues.put(id, value);
+			ConfigUpdater.updateValue(CustomSpawnAddon.getInstance().addonConfig, id, value);
+		}
+	}
+	
+	public static <T> void register(String id, Type type, String name, T defaultValue, double min, double max,
+			String description, String category) {
+		BaseSetting setting = new BaseSetting(id, type, name, defaultValue, min, max, description, category);
+		settings.add(setting);
+	}
+		
+	public Object getValue(String id) {
+		return configValues.get(id);
+	}
+	
+	public enum Type {
+		STRING,
+		INT,
+		BOOLEAN,
+		MUL_STRING
+	}
 }

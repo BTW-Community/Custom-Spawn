@@ -2,17 +2,14 @@ package net.dravigen.custom_spawn.gui;
 
 import net.dravigen.custom_spawn.CustomSpawnAddon;
 import net.dravigen.custom_spawn.config.BaseSetting;
-import net.dravigen.custom_spawn.config.DVS_ConfigManager;
+import net.dravigen.custom_spawn.config.ConfigUpdater;
+import net.dravigen.custom_spawn.config.ConfigUtils;
 import net.minecraft.src.*;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
 
 public class GuiCustomSpawn extends GuiScreen {
 	public static final int buttonIDStart = 1000;
@@ -24,6 +21,8 @@ public class GuiCustomSpawn extends GuiScreen {
 	private static final int SCROLL_AREA_PADDING = 8;
 	private static final int SECTION_HEADER_HEIGHT = 16;
 	private final GuiScreen parentScreen;
+	private static boolean saved = false;
+	private static long timeSinceSaved = 0;
 	
 	private final TreeMap<String, List<BaseSetting>> categorizedSettings;
 	private final List<BaseSetting> settingList;
@@ -33,48 +32,32 @@ public class GuiCustomSpawn extends GuiScreen {
 	
 	public GuiCustomSpawn(GuiScreen parent) {
 		this.parentScreen = parent;
-		this.settingList = DVS_ConfigManager.getSettings();
+		this.settingList = ConfigUtils.getSettings();
 		
 		this.categorizedSettings = new TreeMap<>();
 		
 		for (BaseSetting setting : this.settingList) {
 			String category = setting.category() == null || setting.category().isEmpty()
-							  ? "General"
+							  ? "0.General"
 							  : setting.category();
 			this.categorizedSettings.computeIfAbsent(category, k -> new ArrayList<>()).add(setting);
 		}
 	}
 	
 	private void handleSettingInteraction(int buttonId) {
-		int settingIndex = (buttonId - buttonIDStart) / 2;
-		int actionType = (buttonId - buttonIDStart) % 2;
+		int settingIndex = MathHelper.floor_double((buttonId - buttonIDStart) / 20d);
+		int actionType = (buttonId - buttonIDStart) % 20;
 		
 		if (settingIndex >= 0 && settingIndex < settingList.size()) {
 			BaseSetting setting = settingList.get(settingIndex);
 			boolean shift = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
 			
-			if (setting.type() == DVS_ConfigManager.Type.BOOLEAN) {
-				boolean currentValue = DVS_ConfigManager.getBoolean(setting.id());
-				DVS_ConfigManager.setValue(setting.id(), !currentValue);
+			if (setting.type() == ConfigUtils.Type.BOOLEAN) {
+				boolean currentValue = ConfigUtils.getBoolean(setting.id());
+				ConfigUtils.setValue(setting.id(), !currentValue);
 			}
-			else if (setting.type() == DVS_ConfigManager.Type.DOUBLE) {
-				double currentValue = DVS_ConfigManager.getDouble(setting.id());
-				
-				double delta = (actionType == 0) ? -0.1 : 0.1;
-				double modifier = 1.0;
-				
-				if (shift) modifier = 5.0;
-				else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) modifier = 0.5;
-				
-				double newValue = currentValue + (delta * modifier);
-				
-				newValue = Math.max(newValue, setting.min());
-				newValue = Math.min(newValue, setting.max());
-				
-				DVS_ConfigManager.setValue(setting.id(), newValue);
-			}
-			else if (setting.type() == DVS_ConfigManager.Type.INT) {
-				int currentValue = DVS_ConfigManager.getInt(setting.id());
+			else if (setting.type() == ConfigUtils.Type.INT) {
+				int currentValue = ConfigUtils.getInt(setting.id());
 				
 				int delta = (actionType == 0) ? -1 : 1;
 				
@@ -87,16 +70,17 @@ public class GuiCustomSpawn extends GuiScreen {
 				newValue = (int) Math.max(newValue, setting.min());
 				newValue = (int) Math.min(newValue, setting.max());
 				
-				DVS_ConfigManager.setValue(setting.id(), newValue);
+				ConfigUtils.setValue(setting.id(), newValue);
 			}
-			else if (setting.type() == DVS_ConfigManager.Type.STRING) {
-				String currentValue = DVS_ConfigManager.getString(setting.id());
+			else if (setting.type() == ConfigUtils.Type.STRING) {
+				String currentValue = ConfigUtils.getString(setting.id());
 				
-				int index = CustomSpawnAddon.allBiomes.size();
+				int index = CustomSpawnAddon.allBiomesName.size();
 				
-				ArrayList<BiomeGenBase> allBiomes = CustomSpawnAddon.allBiomes;
-				for (BiomeGenBase b : allBiomes) {
-					if (b.biomeName.replace(" ", "").equalsIgnoreCase(currentValue)) {
+				List<String> allBiomes = CustomSpawnAddon.allBiomesName;
+				
+				for (String b : allBiomes) {
+					if (b.equalsIgnoreCase(currentValue)) {
 						index = allBiomes.indexOf(b);
 						
 						break;
@@ -109,13 +93,96 @@ public class GuiCustomSpawn extends GuiScreen {
 				
 				index = index < 0 ? allBiomes.size() : index > allBiomes.size() ? 0 : index;
 				
-				String newValue = index == allBiomes.size() ? "none" : allBiomes.get(index).biomeName.replace(" ", "");
+				String newValue = index == allBiomes.size() ? "none" : allBiomes.get(index);
 				
-				DVS_ConfigManager.setValue(setting.id(), newValue);
+				ConfigUtils.setValue(setting.id(), newValue);
+			}
+			else if (setting.type() == ConfigUtils.Type.MUL_STRING) {
+				String currentValue = ConfigUtils.getString(setting.id()).split(",")[0];
+				
+				List<String> otherValues = new ArrayList<>(List.of(ConfigUtils.getString(setting.id()).split(",")));
+				
+				otherValues.remove(currentValue);
+				StringBuilder string = new StringBuilder();
+				
+				if (actionType == 2) {
+					string.append("none,");
+					string.append(currentValue);
+					
+					for (String s : otherValues) {
+						string.append(",").append(s);
+					}
+					
+					ConfigUtils.setValue(setting.id(), string.toString());
+					
+					return;
+				}
+				
+				if (actionType >= 3) {
+					int i = actionType - 3;
+					
+					otherValues.remove(i);
+					
+					string.append(currentValue);
+					
+					for (String s : otherValues) {
+						string.append(",").append(s);
+					}
+					
+					ConfigUtils.setValue(setting.id(), string.toString());
+					
+					return;
+				}
+				
+				int index = CustomSpawnAddon.allBiomesName.size();
+				
+				List<String> allBiomes = CustomSpawnAddon.allBiomesName;
+				
+				for (String b : allBiomes) {
+					if (b.equalsIgnoreCase(currentValue)) {
+						index = allBiomes.indexOf(b);
+						
+						break;
+					}
+				}
+				
+				String newValue;
+				
+				List<String> uwBiomes = new ArrayList<>(CustomSpawnAddon.unwantedBiomesInSpawn);
+				List<String> wBiomes = new ArrayList<>(CustomSpawnAddon.wantedBiomesInSpawn);
+				
+				if (!wBiomes.isEmpty()) {
+					wBiomes.remove(0);
+				}
+				if (!uwBiomes.isEmpty()) {
+					uwBiomes.remove(0);
+				}
+				
+				do {
+					int delta = (actionType == 0) ? -1 : actionType == 1 ? 1 : 0;
+					
+					index += delta;
+					
+					index = index < 0 ? allBiomes.size() : index > allBiomes.size() ? 0 : index;
+					
+					newValue = index == allBiomes.size() ? "none" : allBiomes.get(index);
+					
+					if (newValue.equalsIgnoreCase("none")) break;
+				} while (otherValues.contains(newValue) ||
+						(setting.id().equalsIgnoreCase(ConfigUtils.wantedBiomesInSpawnKey) &&
+								uwBiomes.contains(newValue)) ||
+						(setting.id().equalsIgnoreCase(ConfigUtils.unwantedBiomesInSpawnKey) &&
+								wBiomes.contains(newValue)));
+				
+				string.append(newValue);
+				
+				for (String s : otherValues) {
+					string.append(",").append(s);
+				}
+				
+				ConfigUtils.setValue(setting.id(), string.toString());
 			}
 		}
-		
-		DVS_ConfigManager.save();
 	}
 	
 	private void applyClipping(int x, int y, int width, int height) {
@@ -145,25 +212,34 @@ public class GuiCustomSpawn extends GuiScreen {
 		
 		this.drawCenteredString(this.fontRenderer, "Custom Spawn Settings", this.width / 2, 10, 0xFFFFFF);
 		
-		int scrollXStart = this.width / 2 - Math.max(150, this.width / 5);
-		int scrollXEnd = this.width / 2 + Math.max(150, this.width / 5);
+		int scrollXStart = (int) (this.width / 2d - Math.max(150, this.width / 3.5));
+		int scrollXEnd = (int) (this.width / 2d + Math.max(150, this.width / 3.5));
 		
 		int scrollYStart = HEADER_HEIGHT;
-		int scrollYEnd = this.height - 40;
+		int scrollYEnd = this.height - (BUTTON_HEIGHT) * 3 - 1;
 		int scrollHeight = scrollYEnd - scrollYStart;
 		
 		int numCategories = categorizedSettings.size();
-		int contentHeight = (settingList.size() * ITEM_HEIGHT) + (numCategories * SECTION_HEADER_HEIGHT);
+		
+		int contentHeight = getContentHeight(numCategories);
 		
 		float maxScroll = Math.max(0, contentHeight - scrollHeight);
 		int currentScrollY = (int) (scrollOffset * maxScroll);
 		
 		// 1. Draw list background
-		drawRect(scrollXStart - SCROLL_AREA_PADDING,
+		drawRect(0,
+				 scrollYStart - SCROLL_AREA_PADDING,
+				 this.width,
+				 scrollYEnd + SCROLL_AREA_PADDING,
+				 0xAA000000);
+		/*drawRect(scrollXStart - SCROLL_AREA_PADDING,
 				 scrollYStart - SCROLL_AREA_PADDING,
 				 scrollXEnd + SCROLLBAR_WIDTH + SCROLL_AREA_PADDING,
 				 scrollYEnd + SCROLL_AREA_PADDING,
-				 0xAA000000);
+				 0xAA000000);*/
+		int itemY = scrollYStart - currentScrollY;
+		
+		this.buttonList.clear();
 		
 		// 2. Clip
 		this.applyClipping(scrollXStart,
@@ -173,9 +249,6 @@ public class GuiCustomSpawn extends GuiScreen {
 		
 		// 3. Render Items
 		{
-			int itemY = scrollYStart - currentScrollY;
-			this.buttonList.clear();
-			
 			for (Map.Entry<String, List<BaseSetting>> categoryEntry : categorizedSettings.entrySet()) {
 				String categoryName = categoryEntry.getKey();
 				List<BaseSetting> settings = categoryEntry.getValue();
@@ -183,131 +256,192 @@ public class GuiCustomSpawn extends GuiScreen {
 				// Draw Category Header
 				if (itemY + SECTION_HEADER_HEIGHT > scrollYStart && itemY < scrollYEnd) {
 					this.drawCenteredString(this.fontRenderer,
-											categoryName,
+											categoryName.split("\\.")[1],
 											scrollXStart + (scrollXEnd - scrollXStart) / 2,
 											itemY + 4,
 											0xFFAA00);
 				}
+				
 				itemY += SECTION_HEADER_HEIGHT;
 				
 				for (BaseSetting setting : settings) {
 					int originalIndex = settingList.indexOf(setting);
+					int itemMouseYStart = Math.max(scrollYStart, itemY);
+					int itemMouseYEnd = Math.min(scrollYEnd, itemY + ITEM_HEIGHT);
 					
-					if (itemY + ITEM_HEIGHT > scrollYStart && itemY < scrollYEnd) {
-						int itemMouseYStart = Math.max(scrollYStart, itemY);
-						int itemMouseYEnd = Math.min(scrollYEnd, itemY + ITEM_HEIGHT);
-						
-						if (mouseX >= scrollXStart &&
-								mouseX <= scrollXEnd &&
-								mouseY >= itemMouseYStart &&
-								mouseY <= itemMouseYEnd) {
-							hoveredDescription = setting.description();
-						}
-						
-						this.fontRenderer.drawString(setting.name(), scrollXStart + 2, itemY + 6, 0xFFFFFF);
-						
-						int controlX = scrollXEnd - 30;
-						int controlY = itemY + (ITEM_HEIGHT - BUTTON_HEIGHT) / 2;
-						
-						if (setting.type() == DVS_ConfigManager.Type.BOOLEAN) {
-							boolean val = DVS_ConfigManager.getBoolean(setting.id());
-							String buttonText = val ? "True" : "False";
-							
-							GuiButton toggleButton = new GuiButton(buttonIDStart + (originalIndex * 2),
-																   controlX - BUTTON_WIDTH - 2,
-																   controlY,
-																   BUTTON_WIDTH + 2,
-																   BUTTON_HEIGHT,
-																   buttonText);
-							toggleButton.drawButton(this.mc, mouseX, mouseY);
-							this.buttonList.add(toggleButton);
-						}
-						else if (setting.type() == DVS_ConfigManager.Type.DOUBLE) {
-							double val = DVS_ConfigManager.getDouble(setting.id());
-							String valText = String.format("%.2f", val);
-							
-							this.drawCenteredString(this.fontRenderer,
-													valText,
-													controlX - BUTTON_WIDTH / 2,
-													itemY + 6,
-													0xFFFFFF);
-							
-							GuiButton decButton = new GuiButton(buttonIDStart + (originalIndex * 2),
-																controlX - BUTTON_WIDTH / 2 - 35,
-																controlY,
-																20,
-																BUTTON_HEIGHT,
-																"-");
-							decButton.drawButton(this.mc, mouseX, mouseY);
-							this.buttonList.add(decButton);
-							
-							GuiButton incButton = new GuiButton(buttonIDStart + (originalIndex * 2) + 1,
-																controlX - BUTTON_WIDTH / 2 + 15,
-																controlY,
-																20,
-																BUTTON_HEIGHT,
-																"+");
-							incButton.drawButton(this.mc, mouseX, mouseY);
-							this.buttonList.add(incButton);
-						}
-						else if (setting.type() == DVS_ConfigManager.Type.INT) {
-							int val = DVS_ConfigManager.getInt(setting.id());
-							String valText = String.valueOf(val);
-							
-							this.drawCenteredString(this.fontRenderer,
-													valText,
-													controlX - BUTTON_WIDTH / 2,
-													itemY + 6,
-													0xFFFFFF);
-							
-							GuiButton decButton = new GuiButton(buttonIDStart + (originalIndex * 2),
-																controlX - BUTTON_WIDTH - 2,
-																controlY,
-																20,
-																BUTTON_HEIGHT,
-																"-");
-							decButton.drawButton(this.mc, mouseX, mouseY);
-							this.buttonList.add(decButton);
-							
-							GuiButton incButton = new GuiButton(buttonIDStart + (originalIndex * 2) + 1,
-																controlX - BUTTON_WIDTH - 2 + BUTTON_WIDTH - 20 + 2,
-																controlY,
-																20,
-																BUTTON_HEIGHT,
-																"+");
-							incButton.drawButton(this.mc, mouseX, mouseY);
-							this.buttonList.add(incButton);
-						}
-						else if (setting.type() == DVS_ConfigManager.Type.STRING) {
-							String val = DVS_ConfigManager.getString(setting.id());
-							String valText = val;
-							
-							GuiButton decButton = new GuiButton(buttonIDStart + (originalIndex * 2),
-																controlX - 50 - 12 - Math.max(40, fontRenderer.getStringWidth(valText) / 2 + 12),
-																controlY,
-																20,
-																BUTTON_HEIGHT,
-																"<");
-							decButton.drawButton(this.mc, mouseX, mouseY);
-							this.buttonList.add(decButton);
-							
-							GuiButton incButton = new GuiButton(buttonIDStart + (originalIndex * 2) + 1,
-																controlX - 50 - 10 + Math.max(40, fontRenderer.getStringWidth(valText) / 2 + 12),
-																controlY,
-																20,
-																BUTTON_HEIGHT,
-																">");
-							incButton.drawButton(this.mc, mouseX, mouseY);
-							this.buttonList.add(incButton);
-							
-							this.drawCenteredString(this.fontRenderer,
-													valText,
-													controlX - BUTTON_WIDTH / 2,
-													itemY + 6,
-													0xFFFFFF);
-						}
-						
+					if (mouseX >= scrollXStart &&
+							mouseX <= this.width / 2 &&
+							mouseY >= itemMouseYStart &&
+							mouseY <= itemMouseYEnd) {
+						hoveredDescription = setting.description();
 					}
+					
+					this.fontRenderer.drawString(setting.name(), scrollXStart + 2, itemY + 6, 0xFFFFFF);
+					
+					int controlX = scrollXEnd - 30;
+					int controlY = itemY + (ITEM_HEIGHT - BUTTON_HEIGHT) / 2;
+					
+					if (setting.type() == ConfigUtils.Type.BOOLEAN) {
+						boolean val = ConfigUtils.getBoolean(setting.id());
+						String buttonText = val ? "§aTrue" : "§cFalse";
+						
+						GuiButton toggleButton = new GuiButton(buttonIDStart + (originalIndex * 20),
+															   controlX - BUTTON_WIDTH - 2,
+															   controlY,
+															   BUTTON_WIDTH + 2,
+															   BUTTON_HEIGHT,
+															   buttonText);
+						toggleButton.drawButton(this.mc, mouseX, mouseY);
+						this.buttonList.add(toggleButton);
+					}
+					else if (setting.type() == ConfigUtils.Type.INT) {
+						int val = ConfigUtils.getInt(setting.id());
+						String valText = String.valueOf(val);
+						
+						this.drawCenteredString(this.fontRenderer,
+												valText,
+												controlX - BUTTON_WIDTH / 2 - 1,
+												itemY + 7,
+												0xFFFFFF);
+						
+						GuiButton decButton = new GuiButton(buttonIDStart + (originalIndex * 20),
+															controlX - BUTTON_WIDTH - 2,
+															controlY,
+															20,
+															BUTTON_HEIGHT,
+															"-");
+						decButton.drawButton(this.mc, mouseX, mouseY);
+						this.buttonList.add(decButton);
+						
+						GuiButton incButton = new GuiButton(buttonIDStart + (originalIndex * 20) + 1,
+															controlX - BUTTON_WIDTH - 2 + BUTTON_WIDTH - 20 + 2,
+															controlY,
+															20,
+															BUTTON_HEIGHT,
+															"+");
+						incButton.drawButton(this.mc, mouseX, mouseY);
+						this.buttonList.add(incButton);
+					}
+					else if (setting.type() == ConfigUtils.Type.STRING) {
+						String val = ConfigUtils.getString(setting.id());
+						
+						GuiButton previous = new GuiButton(buttonIDStart + (originalIndex * 20),
+														   controlX -
+																   51 -
+																   12 -
+																   Math.max(40,
+																			fontRenderer.getStringWidth(val) / 2 + 12),
+														   controlY,
+														   20,
+														   BUTTON_HEIGHT,
+														   "<");
+						previous.drawButton(this.mc, mouseX, mouseY);
+						this.buttonList.add(previous);
+						
+						GuiButton next = new GuiButton(buttonIDStart + (originalIndex * 20) + 1,
+													   controlX - 50 - 10 +
+															   Math.max(40, fontRenderer.getStringWidth(val) / 2 + 12),
+													   controlY,
+													   20,
+													   BUTTON_HEIGHT,
+													   ">");
+						next.drawButton(this.mc, mouseX, mouseY);
+						this.buttonList.add(next);
+						
+						this.drawCenteredString(this.fontRenderer,
+												val,
+												controlX - BUTTON_WIDTH / 2 - 1,
+												itemY + 7,
+												0xFFFFFF);
+					}
+					else if (setting.type() == ConfigUtils.Type.MUL_STRING) {
+						String value = ConfigUtils.getString(setting.id());
+						
+						int i1 = 0;
+						
+						for (String val : value.split(",")) {
+							boolean b = i1 == 0 && value.split(",").length == 20 - 3;
+							this.drawCenteredString(this.fontRenderer,
+													b ? "max 16" : i1 != 0 ? setting.id().equalsIgnoreCase(ConfigUtils.wantedBiomesInSpawnKey) ? "§a" + val : setting.id().equalsIgnoreCase(ConfigUtils.unwantedBiomesInSpawnKey) ? "§c" + val : val : val,
+													controlX - BUTTON_WIDTH / 2 - 1,
+													itemY + 7,
+													b ? 0xFF0000 : 0xFFFFFF);
+							
+							if (i1 == 0) {
+								GuiButton previous = new GuiButton(buttonIDStart + (originalIndex * 20),
+																   controlX -
+																		   50 -
+																		   12 -
+																		   Math.max(40,
+																					fontRenderer.getStringWidth(val) /
+																							2 + 12),
+																   controlY,
+																   20,
+																   BUTTON_HEIGHT,
+																   "<");
+								previous.drawButton(this.mc, mouseX, mouseY);
+								this.buttonList.add(previous);
+								
+								GuiButton next = new GuiButton(buttonIDStart + (originalIndex * 20) + 1,
+															   controlX - 50 - 10 +
+																	   Math.max(40,
+																				fontRenderer.getStringWidth(val) / 2 +
+																						12),
+															   controlY,
+															   20,
+															   BUTTON_HEIGHT,
+															   ">");
+								next.drawButton(this.mc, mouseX, mouseY);
+								this.buttonList.add(next);
+								
+								GuiButton add = new GuiButton(buttonIDStart + (originalIndex * 20) + 2,
+															  controlX - 50 - 10 +
+																	  (value.split(",").length >= 2
+																	   ? Math.max(40,
+																				  fontRenderer.getStringWidth(value.split(
+																						  ",")[1]) /
+																						  2 +
+																						  12)
+																	   : 40),
+															  controlY + ITEM_HEIGHT,
+															  20,
+															  20,
+															  "+");
+								
+								add.drawButton(this.mc, mouseX, mouseY);
+								add.enabled = !val.isEmpty() &&
+										value.split(",").length < 20 - 3 &&
+										!val.equalsIgnoreCase("none");
+								this.buttonList.add(add);
+							}
+							
+							if (i1 != 0) {
+								GuiButton remove = new GuiButton(buttonIDStart + (originalIndex * 20) + 2 + i1,
+																 controlX -
+																		 50 -
+																		 12 -
+																		 Math.max(40,
+																				  fontRenderer.getStringWidth(val) / 2 +
+																						  12),
+																 controlY + (ITEM_HEIGHT) * i1,
+																 20,
+																 20,
+																 "-");
+								remove.drawButton(this.mc, mouseX, mouseY);
+								this.buttonList.add(remove);
+							}
+							
+							i1++;
+							itemY += ITEM_HEIGHT;
+						}
+						
+						if (i1 == 1) {
+							itemY += ITEM_HEIGHT;
+						}
+						
+						itemY -= ITEM_HEIGHT;
+					}
+					
 					itemY += ITEM_HEIGHT;
 				}
 			}
@@ -333,6 +467,35 @@ public class GuiCustomSpawn extends GuiScreen {
 		this.buttonList.add(done);
 		done.drawButton(this.mc, mouseX, mouseY);
 		
+		int width = fontRenderer.getStringWidth("Save preset") + 8;
+		
+		if (saved && timeSinceSaved + 1000 > System.currentTimeMillis()) {
+			this.drawString(this.fontRenderer,
+									"Saved !",
+									this.width - width - BUTTON_WIDTH / 2,
+							this.height - BUTTON_HEIGHT,
+									0xFFFFFF);
+		}
+		
+		GuiButton save = new GuiButton(buttonIDStart - 10,
+									   this.width - width - 5,
+									   this.height - BUTTON_HEIGHT - 5,
+									   width,
+									   BUTTON_HEIGHT,
+									   "Save preset");
+		save.drawButton(this.mc, mouseX, mouseY);
+		this.buttonList.add(save);
+		
+		GuiButton reset = new GuiButton(buttonIDStart - 11,
+										this.width - width - 5,
+										this.height - 2 * BUTTON_HEIGHT - 9,
+										width,
+										BUTTON_HEIGHT,
+										"Reset");
+		reset.drawButton(this.mc, mouseX, mouseY);
+		this.buttonList.add(reset);
+		
+		
 		if (hoveredDescription != null && !hoveredDescription.isEmpty()) {
 			drawTooltip(hoveredDescription, mouseX, mouseY);
 		}
@@ -343,7 +506,7 @@ public class GuiCustomSpawn extends GuiScreen {
 		super.mouseClicked(mouseX, mouseY, button);
 		
 		int scrollYEnd = this.height - 40;
-		int scrollXEnd = this.width / 2 + Math.max(150, this.width / 5);
+		int scrollXEnd = (int) (this.width / 2d + Math.max(150, this.width / 3.5d));
 		
 		if (mouseX >= scrollXEnd &&
 				mouseX <= scrollXEnd + SCROLLBAR_WIDTH &&
@@ -363,14 +526,38 @@ public class GuiCustomSpawn extends GuiScreen {
 	}
 	
 	@Override
+	public void onGuiClosed() {
+		ConfigUtils.setValue(ConfigUtils.unwantedBiomesInSpawnKey,
+							 CustomSpawnAddon.unwantedBiomesInSpawn.toString()
+									 .replace(" ", "")
+									 .replace("[", "")
+									 .replace("]", ""));
+		ConfigUtils.setValue(ConfigUtils.wantedBiomesInSpawnKey,
+							 CustomSpawnAddon.wantedBiomesInSpawn.toString()
+									 .replace(" ", "")
+									 .replace("[", "")
+									 .replace("]", ""));
+		saved = false;
+	}
+
+	@Override
 	protected void actionPerformed(GuiButton button) {
 		if (button.enabled) {
 			if (button.id == 200) {
-				DVS_ConfigManager.save();
 				this.mc.displayGuiScreen(this.parentScreen);
 			}
 			else if (button.id >= buttonIDStart) {
 				handleSettingInteraction(button.id);
+			}
+			else if (button.id == buttonIDStart - 10) {
+				ConfigUpdater.saveConfig(CustomSpawnAddon.getInstance().addonConfig);
+				saved = true;
+				timeSinceSaved = System.currentTimeMillis();
+			}
+			else if (button.id == buttonIDStart - 11) {
+				for (BaseSetting setting : settingList) {
+					ConfigUtils.setValue(setting.id(), setting.defaultValue());
+				}
 			}
 		}
 	}
@@ -388,11 +575,11 @@ public class GuiCustomSpawn extends GuiScreen {
 		int numCategories = categorizedSettings.size();
 		int scrollYEnd = this.height - 40;
 		float scrollHeight = scrollYEnd - HEADER_HEIGHT;
-		int contentHeight = (settingList.size() * ITEM_HEIGHT) + (numCategories * SECTION_HEADER_HEIGHT);
+		int contentHeight = getContentHeight(numCategories);
 		float maxScroll = Math.max(0, contentHeight - scrollHeight);
 		
 		if (wheel != 0) {
-			float scrollChange = (float) (wheel / 120) * (ITEM_HEIGHT * 3);
+			float scrollChange = (float) (wheel / 120) * (ITEM_HEIGHT);
 			float offsetChange = scrollChange / maxScroll;
 			scrollOffset -= offsetChange;
 			scrollOffset = Math.max(0, Math.min(1, scrollOffset));
@@ -403,6 +590,15 @@ public class GuiCustomSpawn extends GuiScreen {
 			scrollOffset = (-currentMouseY + this.height - HEADER_HEIGHT) / scrollHeight;
 			scrollOffset = Math.max(0, Math.min(1, scrollOffset));
 		}
+	}
+	
+	private int getContentHeight(int numCategories) {
+		String[] wantedBiomes = ConfigUtils.getString(ConfigUtils.wantedBiomesInSpawnKey).split(",");
+		String[] unwantedBiomes = ConfigUtils.getString(ConfigUtils.unwantedBiomesInSpawnKey).split(",");
+		
+		int i = (unwantedBiomes.length == 1 ? ITEM_HEIGHT : (unwantedBiomes.length - 1) * ITEM_HEIGHT) + (wantedBiomes.length == 1 ? ITEM_HEIGHT : (wantedBiomes.length - 1) * ITEM_HEIGHT);
+		
+		return (settingList.size() * ITEM_HEIGHT) + i + (numCategories * SECTION_HEADER_HEIGHT);
 	}
 	
 	private void drawTooltip(String text, int x, int y) {

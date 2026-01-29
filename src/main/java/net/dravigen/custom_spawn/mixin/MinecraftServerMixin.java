@@ -2,6 +2,7 @@ package net.dravigen.custom_spawn.mixin;
 
 import net.dravigen.custom_spawn.CustomSpawnAddon;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.src.WorldServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,5 +17,12 @@ public abstract class MinecraftServerMixin {
 	private void getProgress(MinecraftServer instance, String par1Str, int par2) {
 		this.outputPercentRemaining(par1Str, par2);
 		CustomSpawnAddon.loadingProgress=par2;
+	}
+	
+	@Redirect(method = "stopServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/WorldServer;flush()V"))
+	private void hardCrash(WorldServer instance) {
+		if (instance != null) {
+			instance.flush();
+		}
 	}
 }

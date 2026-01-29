@@ -1,5 +1,6 @@
 package net.dravigen.custom_spawn.mixin;
 
+import net.dravigen.custom_spawn.CustomSpawnAddon;
 import net.minecraft.src.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -7,6 +8,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -22,22 +25,31 @@ public abstract class ServerConfigurationManagerMixin {
 		
 		Set<String> wantedList = new TreeSet<>();
 		Set<String> unwantedList = new TreeSet<>();
+		List<String> uwBiomes = new ArrayList<>(CustomSpawnAddon.unwantedBiomesInSpawn);
+		List<String> wBiomes = new ArrayList<>(CustomSpawnAddon.wantedBiomesInSpawn);
 		
-		for (BiomeGenBase unwantedBiome : unwantedBiomesInSpawn) {
-			unwantedList.add((unwantedBiomesFound.contains(unwantedBiome.biomeName.replace(" ", "")) ? "§4" : "§7") + unwantedBiome.biomeName + "§f");
+		if (!wBiomes.isEmpty()) {
+			wBiomes.remove(0);
 		}
-		for (BiomeGenBase wantedBiome : wantedBiomesInSpawn) {
-			wantedList.add((wantedBiomesFound.contains(wantedBiome.biomeName.replace(" ", "")) ? "§2" : "§7") + wantedBiome.biomeName + "§f");
+		if (!uwBiomes.isEmpty()) {
+			uwBiomes.remove(0);
+		}
+		
+		for (String biomeName : uwBiomes) {
+			unwantedList.add((unwantedBiomesFound.contains(biomeName) ? "§4" : "§7") + biomeName + "§f");
+		}
+		for (String biomeName : wBiomes) {
+			wantedList.add((wantedBiomesFound.contains(biomeName) ? "§2" : "§7") + biomeName + "§f");
 		}
 		
 		sendMsg("", mp);
-		sendMsg("Wanted Biomes Found: (" + wantedBiomesFound.size() + "/" + wantedBiomesInSpawn.size() + ")",
+		sendMsg("Wanted Biomes Found: (" + wantedBiomesFound.size() + "/" + wBiomes.size() + ")",
 				mp,
 				EnumChatFormatting.GREEN);
 		sendMsg(wantedList.toString(), mp);
 		
 		sendMsg("", mp);
-		sendMsg("Unwanted Biomes Found: (" + unwantedBiomesFound.size() + "/" + unwantedBiomesInSpawn.size() + ")",
+		sendMsg("Unwanted Biomes Found: (" + unwantedBiomesFound.size() + "/" + uwBiomes.size() + ")",
 				mp,
 				EnumChatFormatting.RED);
 	

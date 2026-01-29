@@ -3,9 +3,7 @@ package net.dravigen.custom_spawn;
 import api.AddonHandler;
 import api.BTWAddon;
 import api.config.AddonConfig;
-import btw.util.hardcorespawn.HardcoreSpawnUtils;
 import net.dravigen.custom_spawn.config.ConfigUtils;
-import net.dravigen.custom_spawn.config.DVS_ConfigManager;
 import net.minecraft.src.BiomeGenBase;
 
 import java.util.*;
@@ -22,23 +20,16 @@ public class CustomSpawnAddon extends BTWAddon {
 		return instance;
 	}
 	
-	public static Map<String, Boolean> suitableBiomesMap = new HashMap<>();
-	public static String onlyBiomeS = "none";
-	public static boolean affectHR = false;
 	public static int range = 2048;
-	public static int scanStep = 68;
+	public static int scanStep = 128;
 	
-	
-	
-	
-	
-	public static ArrayList<BiomeGenBase> spawneableBiomes = new ArrayList<>();
-	public static ArrayList<BiomeGenBase> unSpawneableBiomes = new ArrayList<>();
-	public static ArrayList<BiomeGenBase> wantedBiomesInSpawn = new ArrayList<>();
-	public static ArrayList<BiomeGenBase> unwantedBiomesInSpawn = new ArrayList<>();
-	public static ArrayList<BiomeGenBase> allBiomes = new ArrayList<>();
-	public static Map<BiomeGenBase, Integer> biomesWithPriority = new HashMap<>();
-	public static BiomeGenBase onlyBiome = null;
+	public static Set<String> spawneableBiomes = new TreeSet<>();
+	public static Set<String> unSpawneableBiomes = new TreeSet<>();
+	public static List<String> wantedBiomesInSpawn = new ArrayList<>();
+	public static List<String> unwantedBiomesInSpawn = new ArrayList<>();
+	public static List<String> allBiomesName = new ArrayList<>();
+	public static List<BiomeGenBase> allBiomes = new ArrayList<>();
+	public static String onlyBiome = "none";
 	
 	public static Set<String> allBiomeFound = new TreeSet<>();
 	public static Set<String> wantedBiomesFound = new TreeSet<>();
@@ -46,26 +37,20 @@ public class CustomSpawnAddon extends BTWAddon {
 	
 	public static int loadingProgress = 0;
 	
-	/*
+	
 	@Override
 	public void handleConfigProperties(AddonConfig config) {
-		//ConfigUtils.reloadConfigs(config);
+		ConfigUtils.reloadConfigs(config);
 	}
 	
 	@Override
 	public void registerConfigProperties(AddonConfig config) {
-		//ConfigUtils.registerConfigs(config);
-	}*/
+		ConfigUtils.registerConfigs(config);
+	}
 	
 	@Override
     public void initialize() {
         AddonHandler.logMessage(this.getName() + " Version " + this.getVersionString() + " Initializing...");
-		
-		DVS_ConfigManager.loadFromFile();
-		
-		ConfigUtils.registerAllSettings();
-		
-		DVS_ConfigManager.save();
 	}
 	
 	@Override
@@ -73,11 +58,8 @@ public class CustomSpawnAddon extends BTWAddon {
 		for (BiomeGenBase biome : BiomeGenBase.biomeList) {
 			if (biome == null) continue;
 			
+			allBiomesName.add(biome.biomeName.replace(" ", ""));
 			allBiomes.add(biome);
-			String name = biome.biomeName.replace(" ", "");
-			boolean defaultValue = !HardcoreSpawnUtils.blacklistedBiomes.contains(biome);
-			
-			suitableBiomesMap.put(name, defaultValue);
 		}
 	}
 }
