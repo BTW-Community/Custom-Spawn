@@ -1,0 +1,68 @@
+customspawn.title=Custom Spawn Settings
+customspawn.saved=Saved!
+customspawn.save=Save preset
+customspawn.reset=Reset
+customspawn.true=True
+customspawn.false=False
+customspawn.enabled=Enabled
+customspawn.disabled=Disabled
+
+customspawn.biome.none=None
+customspawn.biome.Ocean=Ocean
+customspawn.biome.Plains=Plains
+customspawn.biome.Desert=Desert
+customspawn.biome.ExtremeHills=Extreme Hills
+customspawn.biome.Forest=Forest
+customspawn.biome.Taiga=Taiga
+customspawn.biome.Swampland=Swampland
+customspawn.biome.River=River
+customspawn.biome.Hell=Nether
+customspawn.biome.Sky=The End
+customspawn.biome.FrozenOcean=Frozen Ocean
+customspawn.biome.FrozenRiver=Frozen River
+customspawn.biome.IcePlains=Ice Plains
+customspawn.biome.IceMountains=Ice Mountains
+customspawn.biome.MushroomIsland=Mushroom Island
+customspawn.biome.MushroomIslandShore=Mushroom Island Shore
+customspawn.biome.Beach=Beach
+customspawn.biome.DesertHills=Desert Hills
+customspawn.biome.ForestHills=Forest Hills
+customspawn.biome.TaigaHills=Taiga Hills
+customspawn.biome.ExtremeHillsEdge=Extreme Hills Edge
+customspawn.biome.Jungle=Jungle
+customspawn.biome.JungleHills=Jungle Hills
+
+customspawn.config.wantedBiomes.title=Wanted Biomes in Spawn
+customspawn.config.wantedBiomes.desc=List of every biome you would want in spawn's chunks with associated score (higher score means that potential spawn is more likely to get picked).
+customspawn.config.wantedBiomes.example=Example: "Jungle:10,Swampland:10,Forest:5"
+customspawn.config.wantedBiomes.shortdesc=List of every biomes that should be in Spawn
+customspawn.config.category.wanted=1.Wanted Biomes
+
+customspawn.config.unwantedBiomes.title=Unwanted Biomes in Spawn
+customspawn.config.unwantedBiomes.desc=List of every biome you wouldn't want in spawn's chunks (presence lowers spawn score).
+customspawn.config.unwantedBiomes.example=Example: "Ice_Plains:5,Ocean:10"
+customspawn.config.unwantedBiomes.shortdesc=List of biomes that should NOT be in Spawn
+customspawn.config.category.unwanted=2.Unwanted biomes
+
+customspawn.config.suitableBiome.desc=Player can spawn in: %s
+customspawn.config.category.suitable=3.Suitable Biomes
+
+customspawn.config.onlyBiome.title=Spawn Only In Biome
+customspawn.config.onlyBiome.desc=Player only spawn in this biome (if used, the suitable biomes list is ignored)
+customspawn.config.onlyBiome.shortdesc=The only biome the player should spawn in
+
+customspawn.config.range.title=Scan Range
+customspawn.config.range.desc=Range of valid spawn search.
+customspawn.config.range.shortdesc=Range of valid spawn search
+
+customspawn.config.scanStep.title=Scan Interval
+customspawn.config.scanStep.desc=Distance in blocks between each spawn attempt.
+customspawn.config.scanStep.shortdesc=How many blocks are skipped before attempting another spawn
+
+customspawn.config.affectHR.title=Affect Hardcore Respawn
+customspawn.config.affectHR.desc=Should the biome whitelist affect hardcore respawn.
+customspawn.config.affectHR.shortdesc=Should the suitable biome list impact hardcore respawn
+
+customspawn.msg.wantedFound=Wanted Biomes Found: (%s/%s)
+customspawn.msg.unwantedFound=Unwanted Biomes Found: (%s/%s)
+customspawn.msg.otherFound=Other Biomes Found: (%s)

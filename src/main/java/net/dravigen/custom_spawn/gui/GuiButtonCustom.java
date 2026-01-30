@@ -2,6 +2,7 @@ package net.dravigen.custom_spawn.gui;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.src.I18n;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.Minecraft;
@@ -53,12 +54,21 @@ public class GuiButtonCustom extends GuiButton {
 								   this.baseTextureWidth - this.width / 2, this.baseTextureHeight - this.height / 2,
 								   this.width / 2,
 								   this.height / 2);
-		
+
 		int color = 0xffffff;
-		if (this.displayString.equalsIgnoreCase("enabled") || this.displayString.equalsIgnoreCase("true")) {
+		String dsLower = this.displayString == null ? "" : this.displayString.toLowerCase();
+
+        String trueLoc = I18n.getString("customspawn.true").toLowerCase();
+        String falseLoc = I18n.getString("customspawn.false").toLowerCase();
+        String optionsOn = I18n.getString("options.on").toLowerCase();
+        String optionsOff = I18n.getString("options.off").toLowerCase();
+
+        String dsNoColor = dsLower.replace("§a", "").replace("§c", "").replace("§7", "").replace("§f", "").trim();
+
+		if (dsNoColor.equalsIgnoreCase(trueLoc) || dsNoColor.equalsIgnoreCase(optionsOn) || dsNoColor.equalsIgnoreCase("true") || dsNoColor.equalsIgnoreCase("enabled") || dsLower.contains("§a")) {
 			color = 0x29ff00;
 		}
-		else if (this.displayString.equalsIgnoreCase("disabled") || this.displayString.equalsIgnoreCase("false")) {
+		else if (dsNoColor.equalsIgnoreCase(falseLoc) || dsNoColor.equalsIgnoreCase(optionsOff) || dsNoColor.equalsIgnoreCase("false") || dsNoColor.equalsIgnoreCase("disabled") || dsLower.contains("§c")) {
 			color = 0xff1100;
 		}
 		
