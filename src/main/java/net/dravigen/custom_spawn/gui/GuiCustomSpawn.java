@@ -41,7 +41,7 @@ public class GuiCustomSpawn extends GuiScreen {
 		
 		for (BaseSetting setting : this.settingList) {
 			String category = setting.category() == null || setting.category().isEmpty()
-							  ? "0.General"
+							  ? I18n.getString("customspawn.config.category.general")
 							  : setting.category();
 			this.categorizedSettings.computeIfAbsent(I18n.getString(category), k -> new ArrayList<>()).add(setting);
 		}
@@ -588,7 +588,7 @@ public class GuiCustomSpawn extends GuiScreen {
 		
 		int wheel = Mouse.getDWheel();
 		int numCategories = categorizedSettings.size();
-		int scrollYEnd = this.height - 40;
+		int scrollYEnd = this.height - (BUTTON_HEIGHT) * 3 - 1;
 		float scrollHeight = scrollYEnd - HEADER_HEIGHT;
 		int contentHeight = getContentHeight(numCategories);
 		float maxScroll = Math.max(0, contentHeight - scrollHeight);
