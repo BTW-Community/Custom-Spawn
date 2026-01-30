@@ -27,38 +27,37 @@ public class ConfigUtils {
 	public static void registerConfigs(AddonConfig config) {
 		config.registerString(wantedBiomesInSpawnKey,
 							  "none",
-							  "List of every biome you would want in spawn's chunks with associated score (higher score mean that potential spawn is more likely to get picked over another).",
-							  "Example: \"Jungle:10,Swampland:10,Forest:5\"");
-		register(wantedBiomesInSpawnKey, Type.MUL_STRING, "Wanted Biomes in Spawn", "none", 0, 8, "List of every biomes that should be in Spawn", "1.Wanted Biomes");
-		
+							  "customspawn.config.wantedBiomes.desc",
+							  "customspawn.config.wantedBiomes.example");
+		register(wantedBiomesInSpawnKey, Type.MUL_STRING, "customspawn.config.wantedBiomes.title", "none", 0, 8, "customspawn.config.wantedBiomes.shortdesc", "customspawn.config.category.wanted");
+
 		config.registerString(unwantedBiomesInSpawnKey,
 							  "none",
-							  "List of every biome you wouldn't want in spawn's chunks (higher score means that the presence of that biome will make that potential spawn less likely to get picked).",
-							  "Example: \"Ice_Plains:5,Ocean:10\"");
-		register(unwantedBiomesInSpawnKey, Type.MUL_STRING, "Unwanted Biomes in Spawn", "none", 0, 8, "List of every biomes that should NOT be in Spawn", "2.Unwanted biomes");
-		
+							  "customspawn.config.unwantedBiomes.desc",
+							  "customspawn.config.unwantedBiomes.example");
+		register(unwantedBiomesInSpawnKey, Type.MUL_STRING, "customspawn.config.unwantedBiomes.title", "none", 0, 8, "customspawn.config.unwantedBiomes.shortdesc", "customspawn.config.category.unwanted");
+
 		for (BiomeGenBase biome : CustomSpawnAddon.allBiomes) {
 			String name = biome.biomeName.replace(" ", "");
 			String path = suitableBiomesKey + "." + name;
 			boolean defaultValue = !HardcoreSpawnUtils.blacklistedBiomes.contains(biome);
-			
+
 			config.registerString(path, String.valueOf(defaultValue));
-			register(path, Type.BOOLEAN, name, defaultValue, 0, 8, "Player can spawn in: " + name, "3.Suitable Biomes");
-		}
-		
+			register(path, Type.BOOLEAN, "customspawn.biome." + name, defaultValue, 0, 8, "customspawn.config.suitableBiome.desc", "customspawn.config.category.suitable");		}
+
 		config.registerString(onlyBiomeKey,
 							  "none",
-							  "Player only spawn in this biome (if used, the suitable biomes list is ignored");
-		register(onlyBiomeKey, Type.STRING, "Spawn Only In Biome", "none", 0, 8, "The only biome the player should spawn in", "");
-		
-		config.registerString(rangeKey, "2048", "Range of valid spawn search.");
-		register(rangeKey, Type.INT, "Scan Range", 2048, 512, 8192, "Range of valid spawn search", "");
-		
-		config.registerString(scanStepKey, "128", "Distance in blocks between each spawn attempt.");
-		register(scanStepKey, Type.INT, "Scan Interval", 128, 16, 256, "How many block are skipped before attempting another spawn", "");
-		
-		config.registerString(affectHRKey, "false", "Should the biome whitelist affect hardcore respawn.");
-		register(affectHRKey, Type.BOOLEAN, "Affect Hardcore Respawn", false, 0, 8, "Should the suitable biome list impacts hardcore respawn", "");
+							  "customspawn.config.onlyBiome.desc");
+		register(onlyBiomeKey, Type.STRING, "customspawn.config.onlyBiome.title", "none", 0, 8, "customspawn.config.onlyBiome.shortdesc", "");
+
+		config.registerString(rangeKey, "2048", "customspawn.config.range.desc");
+		register(rangeKey, Type.INT, "customspawn.config.range.title", 2048, 512, 8192, "customspawn.config.range.shortdesc", "");
+
+		config.registerString(scanStepKey, "128", "customspawn.config.scanStep.desc");
+		register(scanStepKey, Type.INT, "customspawn.config.scanStep.title", 128, 16, 256, "customspawn.config.scanStep.shortdesc", "");
+
+		config.registerString(affectHRKey, "false", "customspawn.config.affectHR.desc");
+		register(affectHRKey, Type.BOOLEAN, "customspawn.config.affectHR.title", false, 0, 8, "customspawn.config.affectHR.shortdesc", "");
 	}
 	
 	public static void reloadConfigs(AddonConfig config) {
