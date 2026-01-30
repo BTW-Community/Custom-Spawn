@@ -2,7 +2,10 @@ package net.dravigen.custom_spawn.mixin;
 
 import net.dravigen.custom_spawn.gui.GuiButtonCustom;
 import net.dravigen.custom_spawn.gui.GuiCustomSpawn;
-import net.minecraft.src.*;
+import net.minecraft.src.GuiButton;
+import net.minecraft.src.GuiCreateWorld;
+import net.minecraft.src.GuiScreen;
+import net.minecraft.src.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;

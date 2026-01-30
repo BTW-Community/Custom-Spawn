@@ -27,8 +27,7 @@ public abstract class LoadingScreenRendererMixin {
 		if (CustomSpawnAddon.loadingProgress != 0 && !this.field_73727_a.isEmpty()) {
 			String progress = CustomSpawnAddon.loadingProgress + "%";
 			this.mc.fontRenderer.drawStringWithShadow(progress,
-													  (var5 - this.mc.fontRenderer.getStringWidth(progress)) /
-															  2,
+													  (var5 - this.mc.fontRenderer.getStringWidth(progress)) / 2,
 													  var6 / 2 - 4 + 32,
 													  0xFFFFFF);
 		}

@@ -5,7 +5,10 @@ import btw.util.hardcorespawn.HardcoreSpawnUtils;
 import net.dravigen.custom_spawn.CustomSpawnAddon;
 import net.minecraft.src.BiomeGenBase;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ConfigUtils {
 	public static final String suitableBiomesKey = "suitable-biomes";
@@ -25,41 +28,89 @@ public class ConfigUtils {
 	}
 	
 	public static void registerConfigs(AddonConfig config) {
-		config.registerString(wantedBiomesInSpawnKey,
-							  "none");
-		register(wantedBiomesInSpawnKey, Type.MUL_STRING, "customspawn.config.wantedBiomes.title", "none", 0, 8, "customspawn.config.wantedBiomes.shortdesc", "customspawn.config.category.wanted");
-
-		config.registerString(unwantedBiomesInSpawnKey,
-							  "none");
-		register(unwantedBiomesInSpawnKey, Type.MUL_STRING, "customspawn.config.unwantedBiomes.title", "none", 0, 8, "customspawn.config.unwantedBiomes.shortdesc", "customspawn.config.category.unwanted");
-
+		config.registerString(wantedBiomesInSpawnKey, "none");
+		register(wantedBiomesInSpawnKey,
+				 Type.MUL_STRING,
+				 "customspawn.config.wantedBiomes.title",
+				 "none",
+				 0,
+				 8,
+				 "customspawn.config.wantedBiomes.shortdesc",
+				 "customspawn.config.category.wanted");
+		
+		config.registerString(unwantedBiomesInSpawnKey, "none");
+		register(unwantedBiomesInSpawnKey,
+				 Type.MUL_STRING,
+				 "customspawn.config.unwantedBiomes.title",
+				 "none",
+				 0,
+				 8,
+				 "customspawn.config.unwantedBiomes.shortdesc",
+				 "customspawn.config.category.unwanted");
+		
 		for (BiomeGenBase biome : CustomSpawnAddon.allBiomes) {
 			String name = biome.biomeName.replace(" ", "");
 			String path = suitableBiomesKey + "." + name;
 			boolean defaultValue = !HardcoreSpawnUtils.blacklistedBiomes.contains(biome);
-
+			
 			config.registerString(path, String.valueOf(defaultValue));
-			register(path, Type.BOOLEAN, "customspawn.biome." + name, defaultValue, 0, 8, "customspawn.config.suitableBiome.desc", "customspawn.config.category.suitable");
+			register(path,
+					 Type.BOOLEAN,
+					 "customspawn.biome." + name,
+					 defaultValue,
+					 0,
+					 8,
+					 "customspawn.config.suitableBiome.desc",
+					 "customspawn.config.category.suitable");
 		}
-
-		config.registerString(onlyBiomeKey,
-							  "none");
-		register(onlyBiomeKey, Type.STRING, "customspawn.config.onlyBiome.title", "none", 0, 8, "customspawn.config.onlyBiome.shortdesc", "");
-
+		
+		config.registerString(onlyBiomeKey, "none");
+		register(onlyBiomeKey,
+				 Type.STRING,
+				 "customspawn.config.onlyBiome.title",
+				 "none",
+				 0,
+				 8,
+				 "customspawn.config.onlyBiome.shortdesc",
+				 "");
+		
 		config.registerString(rangeKey, "2048");
-		register(rangeKey, Type.INT, "customspawn.config.range.title", 2048, 512, 8192, "customspawn.config.range.shortdesc", "");
-
+		register(rangeKey,
+				 Type.INT,
+				 "customspawn.config.range.title",
+				 2048,
+				 512,
+				 8192,
+				 "customspawn.config.range.shortdesc",
+				 "");
+		
 		config.registerString(scanStepKey, "128");
-		register(scanStepKey, Type.INT, "customspawn.config.scanStep.title", 128, 16, 256, "customspawn.config.scanStep.shortdesc", "");
-
+		register(scanStepKey,
+				 Type.INT,
+				 "customspawn.config.scanStep.title",
+				 128,
+				 16,
+				 256,
+				 "customspawn.config.scanStep.shortdesc",
+				 "");
+		
 		config.registerString(affectHRKey, "false");
-		register(affectHRKey, Type.BOOLEAN, "customspawn.config.affectHR.title", false, 0, 8, "customspawn.config.affectHR.shortdesc", "");
+		register(affectHRKey,
+				 Type.BOOLEAN,
+				 "customspawn.config.affectHR.title",
+				 false,
+				 0,
+				 8,
+				 "customspawn.config.affectHR.shortdesc",
+				 "");
 	}
 	
 	public static void reloadConfigs(AddonConfig config) {
 		for (BaseSetting setting : settings) {
-			if (setting.type() == Type.BOOLEAN) configValues.put(setting.id(), Boolean.parseBoolean(config.getString(setting.id())));
-			else if (setting.type() == Type.INT) configValues.put(setting.id(), Integer.parseInt(config.getString(setting.id())));
+			if (setting.type() == Type.BOOLEAN)
+				configValues.put(setting.id(), Boolean.parseBoolean(config.getString(setting.id())));
+			else if (setting.type() == Type.INT)
+				configValues.put(setting.id(), Integer.parseInt(config.getString(setting.id())));
 			else if (setting.type() == Type.STRING) configValues.put(setting.id(), config.getString(setting.id()));
 			else if (setting.type() == Type.MUL_STRING) configValues.put(setting.id(), config.getString(setting.id()));
 		}
@@ -89,15 +140,15 @@ public class ConfigUtils {
 		CustomSpawnAddon.onlyBiome = configValues.get(onlyBiomeKey).toString();
 		
 		for (String biomeName : CustomSpawnAddon.allBiomesName) {
-			if (Boolean.parseBoolean(configValues.get(suitableBiomesKey + "." + biomeName)
-											 .toString()) || biomeName.equalsIgnoreCase(CustomSpawnAddon.onlyBiome)) {
+			if (Boolean.parseBoolean(configValues.get(suitableBiomesKey + "." + biomeName).toString()) ||
+					biomeName.equalsIgnoreCase(CustomSpawnAddon.onlyBiome)) {
 				CustomSpawnAddon.spawneableBiomes.add(biomeName);
 			}
 			else {
 				CustomSpawnAddon.unSpawneableBiomes.add(biomeName);
 			}
 		}
-	
+		
 		CustomSpawnAddon.range = Integer.parseInt(configValues.get(rangeKey).toString());
 		
 		CustomSpawnAddon.scanStep = Integer.parseInt(configValues.get(scanStepKey).toString());
@@ -143,7 +194,7 @@ public class ConfigUtils {
 		BaseSetting setting = new BaseSetting(id, type, name, defaultValue, min, max, description, category);
 		settings.add(setting);
 	}
-		
+	
 	public Object getValue(String id) {
 		return configValues.get(id);
 	}

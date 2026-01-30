@@ -37,15 +37,13 @@ public class ConfigUpdater {
 			String stringValue = String.valueOf(newValue);
 			
 			ConfigValue oldValue = currentConfig.getValue(path);
-			ConfigValue newValueWithOrigin = ConfigValueFactory.fromAnyRef(stringValue)
-					.withOrigin(oldValue.origin());
+			ConfigValue newValueWithOrigin = ConfigValueFactory.fromAnyRef(stringValue).withOrigin(oldValue.origin());
 			
 			Config updatedConfig = currentConfig.withValue(path, newValueWithOrigin);
 			configField.set(addonConfig, updatedConfig);
 			
 			ConfigUtils.updateInternalConfigs();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			System.err.println("[ConfigUpdater] Critical error updating " + path);
 			e.printStackTrace();
 		}
@@ -62,16 +60,14 @@ public class ConfigUpdater {
 			BufferedWriter writer = Files.newBufferedWriter(configFile.toPath(), StandardOpenOption.TRUNCATE_EXISTING);
 			writer.write(addonConfig.render());
 			writer.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			try {
 				Field changedField = AddonConfig.class.getDeclaredField("hasChanged");
 				changedField.setAccessible(true);
 				changedField.setBoolean(addonConfig, true);
 				
 				addonConfig.readAndWriteConfig();
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				System.err.println("[ConfigUpdater] Failed to save config to disk.");
 			}
 		}

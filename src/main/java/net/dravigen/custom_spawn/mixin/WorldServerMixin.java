@@ -3,11 +3,12 @@ package net.dravigen.custom_spawn.mixin;
 import net.minecraft.src.*;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
-import java.util.*;
+import java.util.List;
+import java.util.Random;
 
 import static net.dravigen.custom_spawn.CustomSpawnAddon.*;
 
@@ -41,12 +42,14 @@ public abstract class WorldServerMixin extends World {
 	}
 	
 	@Redirect(method = "createSpawnPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/WorldChunkManager;findBiomePosition(IIILjava/util/List;Ljava/util/Random;)Lnet/minecraft/src/ChunkPosition;"))
-	private ChunkPosition customSpawn(WorldChunkManager instance, int var1, int var2, int var3, List list, Random par1) {
+	private ChunkPosition customSpawn(WorldChunkManager instance, int var1, int var2, int var3, List list,
+			Random par1) {
 		return getSpawnSpot(instance);
 	}
 	
 	@Redirect(method = "createSpawnPositionLocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/WorldChunkManager;findBiomePosition(IIILjava/util/List;Ljava/util/Random;)Lnet/minecraft/src/ChunkPosition;"))
-	private ChunkPosition customSpawnLocked(WorldChunkManager instance, int var1, int var2, int var3, List list, Random par1) {
+	private ChunkPosition customSpawnLocked(WorldChunkManager instance, int var1, int var2, int var3, List list,
+			Random par1) {
 		return getSpawnSpot(instance);
 	}
 	

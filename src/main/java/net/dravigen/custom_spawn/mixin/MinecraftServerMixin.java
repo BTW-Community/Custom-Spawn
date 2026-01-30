@@ -16,7 +16,7 @@ public abstract class MinecraftServerMixin {
 	@Redirect(method = "initialWorldChunkLoad", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;outputPercentRemaining(Ljava/lang/String;I)V"))
 	private void getProgress(MinecraftServer instance, String par1Str, int par2) {
 		this.outputPercentRemaining(par1Str, par2);
-		CustomSpawnAddon.loadingProgress=par2;
+		CustomSpawnAddon.loadingProgress = par2;
 	}
 	
 	@Redirect(method = "stopServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/WorldServer;flush()V"))

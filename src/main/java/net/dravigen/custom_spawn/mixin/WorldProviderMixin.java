@@ -18,7 +18,9 @@ public class WorldProviderMixin {
 	
 	@Inject(method = "canCoordinateBeSpawn", at = @At("RETURN"), cancellable = true)
 	private void canSpawnHereFromList(int par1, int par2, CallbackInfoReturnable<Boolean> cir) {
-		if (CustomSpawnAddon.spawneableBiomes.contains(this.worldObj.getBiomeGenForCoords(par1, par2).biomeName.replace(" ", ""))) {
+		if (CustomSpawnAddon.spawneableBiomes.contains(this.worldObj.getBiomeGenForCoords(par1, par2).biomeName.replace(
+				" ",
+				""))) {
 			int id = this.worldObj.getFirstUncoveredBlock(par1, par2);
 			
 			String onlyBiome = CustomSpawnAddon.onlyBiome;

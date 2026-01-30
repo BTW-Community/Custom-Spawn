@@ -10,7 +10,10 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class GuiCustomSpawn extends GuiScreen {
 	public static final int buttonIDStart = 1000;
@@ -21,10 +24,9 @@ public class GuiCustomSpawn extends GuiScreen {
 	private static final int SCROLLBAR_WIDTH = 6;
 	private static final int SCROLL_AREA_PADDING = 8;
 	private static final int SECTION_HEADER_HEIGHT = 16;
-	private final GuiScreen parentScreen;
 	private static boolean saved = false;
 	private static long timeSinceSaved = 0;
-	
+	private final GuiScreen parentScreen;
 	private final TreeMap<String, List<BaseSetting>> categorizedSettings;
 	private final List<BaseSetting> settingList;
 	
@@ -228,11 +230,7 @@ public class GuiCustomSpawn extends GuiScreen {
 		int currentScrollY = (int) (scrollOffset * maxScroll);
 		
 		// 1. Draw list background
-		drawRect(0,
-				 scrollYStart - SCROLL_AREA_PADDING,
-				 this.width,
-				 scrollYEnd + SCROLL_AREA_PADDING,
-				 0xAA000000);
+		drawRect(0, scrollYStart - SCROLL_AREA_PADDING, this.width, scrollYEnd + SCROLL_AREA_PADDING, 0xAA000000);
 		/*drawRect(scrollXStart - SCROLL_AREA_PADDING,
 				 scrollYStart - SCROLL_AREA_PADDING,
 				 scrollXEnd + SCROLLBAR_WIDTH + SCROLL_AREA_PADDING,
@@ -275,30 +273,36 @@ public class GuiCustomSpawn extends GuiScreen {
 							mouseY >= itemMouseYStart &&
 							mouseY <= itemMouseYEnd) {
 						String descKey = setting.description();
-
-				        if (descKey != null && descKey.startsWith("customspawn.config.")) {
-
-				            if (descKey.equals("customspawn.config.suitableBiome.desc")) {
-								hoveredDescription = String.format(I18n.getString(descKey), LocalizationUtil.localizeSettingName(setting));
-				            } else
-                            {
+						
+						if (descKey != null && descKey.startsWith("customspawn.config.")) {
+							
+							if (descKey.equals("customspawn.config.suitableBiome.desc")) {
+								hoveredDescription = String.format(I18n.getString(descKey),
+																   LocalizationUtil.localizeSettingName(setting));
+							}
+							else {
 								hoveredDescription = I18n.getString(descKey);
-				            }
-				        } else
-                        {
-				            hoveredDescription = descKey;
-				        }
+							}
+						}
+						else {
+							hoveredDescription = descKey;
+						}
 					}
-
-					this.fontRenderer.drawString(LocalizationUtil.localizeSettingName(setting), scrollXStart + 2, itemY + 6, 0xFFFFFF);
+					
+					this.fontRenderer.drawString(LocalizationUtil.localizeSettingName(setting),
+												 scrollXStart + 2,
+												 itemY + 6,
+												 0xFFFFFF);
 					
 					int controlX = scrollXEnd - 30;
 					int controlY = itemY + (ITEM_HEIGHT - BUTTON_HEIGHT) / 2;
-
+					
 					if (setting.type() == ConfigUtils.Type.BOOLEAN) {
 						boolean val = ConfigUtils.getBoolean(setting.id());
-						String buttonText = val ? "§a" + I18n.getString("customspawn.true") : "§c" + I18n.getString("customspawn.false");
-
+						String buttonText = val
+											? "§a" + I18n.getString("customspawn.true")
+											: "§c" + I18n.getString("customspawn.false");
+						
 						GuiButton toggleButton = new GuiButton(buttonIDStart + (originalIndex * 20),
 															   controlX - BUTTON_WIDTH - 2,
 															   controlY,
@@ -338,31 +342,34 @@ public class GuiCustomSpawn extends GuiScreen {
 					}
 					else if (setting.type() == ConfigUtils.Type.STRING) {
 						String val = ConfigUtils.getString(setting.id());
-                        String displayVal = LocalizationUtil.localizeBiome(val);
-
+						String displayVal = LocalizationUtil.localizeBiome(val);
+						
 						GuiButton previous = new GuiButton(buttonIDStart + (originalIndex * 20),
 														   controlX -
 																   51 -
 																   12 -
 																   Math.max(40,
-																			fontRenderer.getStringWidth(displayVal) / 2 + 12),
+																			fontRenderer.getStringWidth(displayVal) /
+																					2 + 12),
 														   controlY,
 														   20,
 														   BUTTON_HEIGHT,
 														   "<");
 						previous.drawButton(this.mc, mouseX, mouseY);
 						this.buttonList.add(previous);
-
+						
 						GuiButton next = new GuiButton(buttonIDStart + (originalIndex * 20) + 1,
 													   controlX - 50 - 10 +
-															   Math.max(40, fontRenderer.getStringWidth(displayVal) / 2 + 12),
+															   Math.max(40,
+																		fontRenderer.getStringWidth(displayVal) / 2 +
+																				12),
 													   controlY,
 													   20,
 													   BUTTON_HEIGHT,
 													   ">");
 						next.drawButton(this.mc, mouseX, mouseY);
 						this.buttonList.add(next);
-
+						
 						this.drawCenteredString(this.fontRenderer,
 												displayVal,
 												controlX - BUTTON_WIDTH / 2 - 1,
@@ -371,15 +378,23 @@ public class GuiCustomSpawn extends GuiScreen {
 					}
 					else if (setting.type() == ConfigUtils.Type.MUL_STRING) {
 						String value = ConfigUtils.getString(setting.id());
-                        String[] parts = value.split(",");
-
+						String[] parts = value.split(",");
+						
 						int i1 = 0;
-
+						
 						for (String val : parts) {
 							String displayVal = LocalizationUtil.localizeBiome(val);
 							boolean b = i1 == 0 && parts.length == 20 - 3;
 							this.drawCenteredString(this.fontRenderer,
-													b ? "max 16" : i1 != 0 ? setting.id().equalsIgnoreCase(ConfigUtils.wantedBiomesInSpawnKey) ? "§a" + displayVal : setting.id().equalsIgnoreCase(ConfigUtils.unwantedBiomesInSpawnKey) ? "§c" + displayVal : displayVal : displayVal,
+													b
+													? "max 16"
+													: i1 != 0 ? setting.id()
+																		.equalsIgnoreCase(ConfigUtils.wantedBiomesInSpawnKey)
+																? "§a" + displayVal
+																: setting.id()
+																		  .equalsIgnoreCase(ConfigUtils.unwantedBiomesInSpawnKey)
+																  ? "§c" + displayVal
+																  : displayVal : displayVal,
 													controlX - BUTTON_WIDTH / 2 - 1,
 													itemY + 7,
 													b ? 0xFF0000 : 0xFFFFFF);
@@ -390,8 +405,8 @@ public class GuiCustomSpawn extends GuiScreen {
 																		   50 -
 																		   12 -
 																		   Math.max(40,
-																					fontRenderer.getStringWidth(displayVal) /
-																							2 + 12),
+																					fontRenderer.getStringWidth(
+																							displayVal) / 2 + 12),
 																   controlY,
 																   20,
 																   BUTTON_HEIGHT,
@@ -402,8 +417,8 @@ public class GuiCustomSpawn extends GuiScreen {
 								GuiButton next = new GuiButton(buttonIDStart + (originalIndex * 20) + 1,
 															   controlX - 50 - 10 +
 																	   Math.max(40,
-																				fontRenderer.getStringWidth(displayVal) / 2 +
-																						12),
+																				fontRenderer.getStringWidth(displayVal) /
+																						2 + 12),
 															   controlY,
 															   20,
 															   BUTTON_HEIGHT,
@@ -415,10 +430,10 @@ public class GuiCustomSpawn extends GuiScreen {
 															  controlX - 50 - 10 +
 																	  (parts.length >= 2
 																	   ? Math.max(40,
-																				  fontRenderer.getStringWidth(LocalizationUtil.localizeBiome
-																						  (parts[1])) /
-																						  2 +
-																						  12)
+																				  fontRenderer.getStringWidth(
+																						  LocalizationUtil.localizeBiome(
+																								  parts[1])) /
+																						  2 + 12)
 																	   : 40),
 															  controlY + ITEM_HEIGHT,
 															  20,
@@ -426,9 +441,7 @@ public class GuiCustomSpawn extends GuiScreen {
 															  "+");
 								
 								add.drawButton(this.mc, mouseX, mouseY);
-								add.enabled = !val.isEmpty() &&
-										parts.length < 20 - 3 &&
-										!val.equalsIgnoreCase("none");
+								add.enabled = !val.isEmpty() && parts.length < 20 - 3 && !val.equalsIgnoreCase("none");
 								this.buttonList.add(add);
 							}
 							
@@ -438,8 +451,8 @@ public class GuiCustomSpawn extends GuiScreen {
 																		 50 -
 																		 12 -
 																		 Math.max(40,
-																				  fontRenderer.getStringWidth(displayVal) / 2 +
-																						  12),
+																				  fontRenderer.getStringWidth(displayVal) /
+																						  2 + 12),
 																 controlY + (ITEM_HEIGHT) * i1,
 																 20,
 																 20,
@@ -483,17 +496,17 @@ public class GuiCustomSpawn extends GuiScreen {
 		GuiButton done = new GuiButton(200, this.width / 2 - 100, this.height - 25, I18n.getString("gui.done"));
 		this.buttonList.add(done);
 		done.drawButton(this.mc, mouseX, mouseY);
-
+		
 		int width = fontRenderer.getStringWidth(I18n.getString("customspawn.save")) + 8;
-
+		
 		if (saved && timeSinceSaved + 1000 > System.currentTimeMillis()) {
 			this.drawString(this.fontRenderer,
-									I18n.getString("customspawn.saved"),
-									this.width - width - BUTTON_WIDTH / 2,
+							I18n.getString("customspawn.saved"),
+							this.width - width - BUTTON_WIDTH / 2,
 							this.height - BUTTON_HEIGHT,
-									0xFFFFFF);
+							0xFFFFFF);
 		}
-
+		
 		GuiButton save = new GuiButton(buttonIDStart - 10,
 									   this.width - width - 5,
 									   this.height - BUTTON_HEIGHT - 5,
@@ -502,7 +515,7 @@ public class GuiCustomSpawn extends GuiScreen {
 									   I18n.getString("customspawn.save"));
 		save.drawButton(this.mc, mouseX, mouseY);
 		this.buttonList.add(save);
-
+		
 		GuiButton reset = new GuiButton(buttonIDStart - 11,
 										this.width - width - 5,
 										this.height - 2 * BUTTON_HEIGHT - 9,
@@ -542,21 +555,6 @@ public class GuiCustomSpawn extends GuiScreen {
 		}
 	}
 	
-	@Override
-	public void onGuiClosed() {
-		ConfigUtils.setValue(ConfigUtils.unwantedBiomesInSpawnKey,
-							 CustomSpawnAddon.unwantedBiomesInSpawn.toString()
-									 .replace(" ", "")
-									 .replace("[", "")
-									 .replace("]", ""));
-		ConfigUtils.setValue(ConfigUtils.wantedBiomesInSpawnKey,
-							 CustomSpawnAddon.wantedBiomesInSpawn.toString()
-									 .replace(" ", "")
-									 .replace("[", "")
-									 .replace("]", ""));
-		saved = false;
-	}
-
 	@Override
 	protected void actionPerformed(GuiButton button) {
 		if (button.enabled) {
@@ -609,11 +607,27 @@ public class GuiCustomSpawn extends GuiScreen {
 		}
 	}
 	
+	@Override
+	public void onGuiClosed() {
+		ConfigUtils.setValue(ConfigUtils.unwantedBiomesInSpawnKey,
+							 CustomSpawnAddon.unwantedBiomesInSpawn.toString()
+									 .replace(" ", "")
+									 .replace("[", "")
+									 .replace("]", ""));
+		ConfigUtils.setValue(ConfigUtils.wantedBiomesInSpawnKey,
+							 CustomSpawnAddon.wantedBiomesInSpawn.toString()
+									 .replace(" ", "")
+									 .replace("[", "")
+									 .replace("]", ""));
+		saved = false;
+	}
+	
 	private int getContentHeight(int numCategories) {
 		String[] wantedBiomes = ConfigUtils.getString(ConfigUtils.wantedBiomesInSpawnKey).split(",");
 		String[] unwantedBiomes = ConfigUtils.getString(ConfigUtils.unwantedBiomesInSpawnKey).split(",");
 		
-		int i = (unwantedBiomes.length == 1 ? ITEM_HEIGHT : (unwantedBiomes.length - 1) * ITEM_HEIGHT) + (wantedBiomes.length == 1 ? ITEM_HEIGHT : (wantedBiomes.length - 1) * ITEM_HEIGHT);
+		int i = (unwantedBiomes.length == 1 ? ITEM_HEIGHT : (unwantedBiomes.length - 1) * ITEM_HEIGHT) +
+				(wantedBiomes.length == 1 ? ITEM_HEIGHT : (wantedBiomes.length - 1) * ITEM_HEIGHT);
 		
 		return (settingList.size() * ITEM_HEIGHT) + i + (numCategories * SECTION_HEADER_HEIGHT);
 	}

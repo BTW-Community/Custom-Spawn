@@ -12,23 +12,10 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public class CustomSpawnAddon extends BTWAddon {
-    private static CustomSpawnAddon instance;
-
-    public CustomSpawnAddon() {
-        super();
-		instance = this;
-    }
-	
 	public static ChunkPosition customSpawnCoord = null;
 	public static boolean createdSpawn = false;
-	
-	public static BTWAddon getInstance() {
-		return instance;
-	}
-	
 	public static int range = 2048;
 	public static int scanStep = 128;
-	
 	public static Set<String> spawneableBiomes = new TreeSet<>();
 	public static Set<String> unSpawneableBiomes = new TreeSet<>();
 	public static List<String> wantedBiomesInSpawn = new ArrayList<>();
@@ -36,41 +23,19 @@ public class CustomSpawnAddon extends BTWAddon {
 	public static List<String> allBiomesName = new ArrayList<>();
 	public static List<BiomeGenBase> allBiomes = new ArrayList<>();
 	public static String onlyBiome = "none";
-	
 	public static Set<String> allBiomeFound = new TreeSet<>();
 	public static Set<String> wantedBiomesFound = new TreeSet<>();
 	public static Set<String> unwantedBiomesFound = new TreeSet<>();
-	
 	public static int loadingProgress = 0;
-	
-	
-	@Override
-	public void handleConfigProperties(AddonConfig config) {
-		ConfigUtils.reloadConfigs(config);
+	private static CustomSpawnAddon instance;
+	public CustomSpawnAddon() {
+		super();
+		instance = this;
 	}
 	
-	@Override
-	public void registerConfigProperties(AddonConfig config) {
-		ConfigUtils.registerConfigs(config);
+	public static BTWAddon getInstance() {
+		return instance;
 	}
-	
-	@Override
-    public void initialize() {
-        AddonHandler.logMessage(this.getName() + " Version " + this.getVersionString() + " Initializing...");
-	}
-	
-	@Override
-	public void preInitialize() {
-		for (BiomeGenBase biome : BiomeGenBase.biomeList) {
-			if (biome == null) continue;
-			
-			if (biome == BiomeGenBase.hell || biome == BiomeGenBase.sky) continue;
-			
-			allBiomesName.add(biome.biomeName.replace(" ", ""));
-			allBiomes.add(biome);
-		}
-	}
-	
 	
 	@Unique
 	public static @NotNull ChunkPosition createCustomSpawn(WorldChunkManager instance) {
@@ -88,7 +53,8 @@ public class CustomSpawnAddon extends BTWAddon {
 	}
 	
 	@Unique
-	public static ChunkPosition findBestSpawnLocationWithBiomesCriteria(WorldChunkManager manager, int originX, int originZ, int searchRadius, List<String> wantedBiomesInSpawn, List<String> unwantedBiomesInSpawn) {
+	public static ChunkPosition findBestSpawnLocationWithBiomesCriteria(WorldChunkManager manager, int originX,
+			int originZ, int searchRadius, List<String> wantedBiomesInSpawn, List<String> unwantedBiomesInSpawn) {
 		IntCache.resetIntCache();
 		
 		allBiomeFound.clear();
@@ -123,10 +89,12 @@ public class CustomSpawnAddon extends BTWAddon {
 			int limitedScanZMin = originZ - r;
 			int limitedScanZMax = originZ + r;
 			
-			for (int potentialCenterX = limitedScanXMin; potentialCenterX <= limitedScanXMax; potentialCenterX += SCAN_STEP) {
+			for (int potentialCenterX = limitedScanXMin; potentialCenterX <=
+					limitedScanXMax; potentialCenterX += SCAN_STEP) {
 				if (foundBestSpawn) break;
 				
-				for (int potentialCenterZ = limitedScanZMin; potentialCenterZ <= limitedScanZMax; potentialCenterZ += SCAN_STEP) {
+				for (int potentialCenterZ = limitedScanZMin; potentialCenterZ <=
+						limitedScanZMax; potentialCenterZ += SCAN_STEP) {
 					if (foundBestSpawn) break;
 					
 					if (r > 0) {
@@ -265,5 +233,32 @@ public class CustomSpawnAddon extends BTWAddon {
 		}
 		
 		return new ChunkPosition(x0, 0, z0);
+	}
+	
+	@Override
+	public void preInitialize() {
+		for (BiomeGenBase biome : BiomeGenBase.biomeList) {
+			if (biome == null) continue;
+			
+			if (biome == BiomeGenBase.hell || biome == BiomeGenBase.sky) continue;
+			
+			allBiomesName.add(biome.biomeName.replace(" ", ""));
+			allBiomes.add(biome);
+		}
+	}
+	
+	@Override
+	public void initialize() {
+		AddonHandler.logMessage(this.getName() + " Version " + this.getVersionString() + " Initializing...");
+	}
+	
+	@Override
+	public void registerConfigProperties(AddonConfig config) {
+		ConfigUtils.registerConfigs(config);
+	}
+	
+	@Override
+	public void handleConfigProperties(AddonConfig config) {
+		ConfigUtils.reloadConfigs(config);
 	}
 }
