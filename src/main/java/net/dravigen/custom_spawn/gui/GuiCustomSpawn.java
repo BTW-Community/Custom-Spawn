@@ -41,7 +41,7 @@ public class GuiCustomSpawn extends GuiScreen {
 			String category = setting.category() == null || setting.category().isEmpty()
 							  ? "0.General"
 							  : setting.category();
-			this.categorizedSettings.computeIfAbsent(category, k -> new ArrayList<>()).add(setting);
+			this.categorizedSettings.computeIfAbsent(I18n.getString(category), k -> new ArrayList<>()).add(setting);
 		}
 	}
 	
@@ -376,8 +376,7 @@ public class GuiCustomSpawn extends GuiScreen {
 						int i1 = 0;
 
 						for (String val : parts) {
-							String rawVal = val;
-							String displayVal = LocalizationUtil.localizeBiome(rawVal);
+							String displayVal = LocalizationUtil.localizeBiome(val);
 							boolean b = i1 == 0 && parts.length == 20 - 3;
 							this.drawCenteredString(this.fontRenderer,
 													b ? "max 16" : i1 != 0 ? setting.id().equalsIgnoreCase(ConfigUtils.wantedBiomesInSpawnKey) ? "§a" + displayVal : setting.id().equalsIgnoreCase(ConfigUtils.unwantedBiomesInSpawnKey) ? "§c" + displayVal : displayVal : displayVal,
@@ -427,9 +426,9 @@ public class GuiCustomSpawn extends GuiScreen {
 															  "+");
 								
 								add.drawButton(this.mc, mouseX, mouseY);
-								add.enabled = !rawVal.isEmpty() &&
+								add.enabled = !val.isEmpty() &&
 										parts.length < 20 - 3 &&
-										!rawVal.equalsIgnoreCase("none");
+										!val.equalsIgnoreCase("none");
 								this.buttonList.add(add);
 							}
 							

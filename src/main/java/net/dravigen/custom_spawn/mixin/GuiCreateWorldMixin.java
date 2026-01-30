@@ -21,8 +21,8 @@ public abstract class GuiCreateWorldMixin extends GuiScreen {
 												60,
 												20,
 												20,
-												20,
-												20,
+												0,
+												0,
 												"",
 												new ResourceLocation("custom_spawn:textures/gui/texture.png")));
 	}

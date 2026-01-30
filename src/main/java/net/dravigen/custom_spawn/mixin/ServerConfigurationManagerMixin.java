@@ -30,74 +30,82 @@ public abstract class ServerConfigurationManagerMixin {
         if (!uwBiomes.isEmpty()) {
             uwBiomes.remove(0);
         }
+		
+		ChatMessageComponent leftBracket = ChatMessageComponent.createFromText("§f[");
+		ChatMessageComponent rightBracket = ChatMessageComponent.createFromText("§f]");
+		ChatMessageComponent comma = ChatMessageComponent.createFromText("§f, ");
 
         ChatMessageComponent wantedFoundNum = ChatMessageComponent.createFromText(String.valueOf(wantedBiomesFound.size())).setColor(EnumChatFormatting.GREEN);
         ChatMessageComponent wantedTotalNum = ChatMessageComponent.createFromText(String.valueOf(wBiomes.size())).setColor(EnumChatFormatting.WHITE);
-        ChatMessageComponent wantedLine = ChatMessageComponent.createFromTranslationWithSubstitutions("customspawn.msg.wantedFound", wantedFoundNum, wantedTotalNum);
-        wantedLine.setColor(EnumChatFormatting.GREEN);
-
-        wantedLine.appendComponent(ChatMessageComponent.createFromText(" "));
+		
+		mp.sendChatToPlayer(ChatMessageComponent.createFromTranslationWithSubstitutions("customspawn.msg.wantedFound", wantedFoundNum, wantedTotalNum).setColor(EnumChatFormatting.GREEN));
+		
+		ChatMessageComponent wantedBiomeLine = new ChatMessageComponent(leftBracket);
         if (wBiomes.isEmpty()) {
             ChatMessageComponent none = ChatMessageComponent.createFromTranslationKey("customspawn.biome.none");
             none.setColor(EnumChatFormatting.WHITE);
-            wantedLine.appendComponent(none);
+			wantedBiomeLine.appendComponent(none);
         } else {
             boolean first = true;
             for (String biomeName : wBiomes) {
-                if (!first) wantedLine.appendComponent(ChatMessageComponent.createFromText(", "));
+                if (!first) wantedBiomeLine.appendComponent(comma);
                 ChatMessageComponent comp = ChatMessageComponent.createFromTranslationKey("customspawn.biome." + biomeName);
                 comp.setColor(wantedBiomesFound.contains(biomeName) ? EnumChatFormatting.GREEN : EnumChatFormatting.WHITE);
-                wantedLine.appendComponent(comp);
+				wantedBiomeLine.appendComponent(comp);
                 first = false;
             }
         }
-        mp.sendChatToPlayer(wantedLine);
+		wantedBiomeLine.appendComponent(rightBracket);
+		mp.sendChatToPlayer(wantedBiomeLine);
 
         sendMsg("", mp);
-
-        ChatMessageComponent unwantedFoundNum = ChatMessageComponent.createFromText(String.valueOf(unwantedBiomesFound.size())).setColor(EnumChatFormatting.RED);
+		
+		ChatMessageComponent unwantedFoundNum = ChatMessageComponent.createFromText(String.valueOf(unwantedBiomesFound.size())).setColor(EnumChatFormatting.RED);
         ChatMessageComponent unwantedTotalNum = ChatMessageComponent.createFromText(String.valueOf(uwBiomes.size())).setColor(EnumChatFormatting.WHITE);
-        ChatMessageComponent unwantedLine = ChatMessageComponent.createFromTranslationWithSubstitutions("customspawn.msg.unwantedFound", unwantedFoundNum, unwantedTotalNum);
-        unwantedLine.setColor(EnumChatFormatting.RED);
-
-        unwantedLine.appendComponent(ChatMessageComponent.createFromText(" "));
-        if (uwBiomes.isEmpty()) {
+		
+		mp.sendChatToPlayer(ChatMessageComponent.createFromTranslationWithSubstitutions("customspawn.msg.unwantedFound", unwantedFoundNum, unwantedTotalNum).setColor(EnumChatFormatting.RED));
+		
+		ChatMessageComponent unwantedBiomeLine = new ChatMessageComponent(leftBracket);
+		
+		if (uwBiomes.isEmpty()) {
             ChatMessageComponent none = ChatMessageComponent.createFromTranslationKey("customspawn.biome.none");
             none.setColor(EnumChatFormatting.WHITE);
-            unwantedLine.appendComponent(none);
+			unwantedBiomeLine.appendComponent(none);
         } else {
             boolean first = true;
             for (String biomeName : uwBiomes) {
-                if (!first) unwantedLine.appendComponent(ChatMessageComponent.createFromText(", "));
+                if (!first) unwantedBiomeLine.appendComponent(comma);
                 ChatMessageComponent comp = ChatMessageComponent.createFromTranslationKey("customspawn.biome." + biomeName);
                 comp.setColor(unwantedBiomesFound.contains(biomeName) ? EnumChatFormatting.DARK_RED : EnumChatFormatting.WHITE);
-                unwantedLine.appendComponent(comp);
+				unwantedBiomeLine.appendComponent(comp);
                 first = false;
             }
         }
-        mp.sendChatToPlayer(unwantedLine);
+		unwantedBiomeLine.appendComponent(rightBracket);
+		mp.sendChatToPlayer(unwantedBiomeLine);
         sendMsg("", mp);
 
         ChatMessageComponent otherFoundNum = ChatMessageComponent.createFromText(String.valueOf(allBiomeFound.size())).setColor(EnumChatFormatting.AQUA);
-        ChatMessageComponent otherLine = ChatMessageComponent.createFromTranslationWithSubstitutions("customspawn.msg.otherFound", otherFoundNum);
-        otherLine.setColor(EnumChatFormatting.AQUA);
+		
+		mp.sendChatToPlayer(ChatMessageComponent.createFromTranslationWithSubstitutions("customspawn.msg.otherFound", otherFoundNum).setColor(EnumChatFormatting.AQUA));
+		ChatMessageComponent otherBiomesLine = new ChatMessageComponent(leftBracket);
 
-        otherLine.appendComponent(ChatMessageComponent.createFromText(" "));
         if (allBiomeFound.isEmpty()) {
             ChatMessageComponent none = ChatMessageComponent.createFromTranslationKey("customspawn.biome.none");
             none.setColor(EnumChatFormatting.WHITE);
-            otherLine.appendComponent(none);
+			otherBiomesLine.appendComponent(none);
         } else {
             boolean first = true;
             for (String biomeName : allBiomeFound) {
-                if (!first) otherLine.appendComponent(ChatMessageComponent.createFromText(", "));
+                if (!first) otherBiomesLine.appendComponent(comma);
                 ChatMessageComponent comp = ChatMessageComponent.createFromTranslationKey("customspawn.biome." + biomeName);
-                comp.setColor(EnumChatFormatting.AQUA);
-                otherLine.appendComponent(comp);
+				otherBiomesLine.appendComponent(comp);
                 first = false;
             }
         }
-        mp.sendChatToPlayer(otherLine);
+		
+		otherBiomesLine.appendComponent(rightBracket);
+		mp.sendChatToPlayer(otherBiomesLine);
 
         allBiomeFound.clear();
         wantedBiomesFound.clear();

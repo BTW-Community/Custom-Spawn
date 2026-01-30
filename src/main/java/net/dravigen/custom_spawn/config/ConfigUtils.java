@@ -26,15 +26,11 @@ public class ConfigUtils {
 	
 	public static void registerConfigs(AddonConfig config) {
 		config.registerString(wantedBiomesInSpawnKey,
-							  "none",
-							  "customspawn.config.wantedBiomes.desc",
-							  "customspawn.config.wantedBiomes.example");
+							  "none");
 		register(wantedBiomesInSpawnKey, Type.MUL_STRING, "customspawn.config.wantedBiomes.title", "none", 0, 8, "customspawn.config.wantedBiomes.shortdesc", "customspawn.config.category.wanted");
 
 		config.registerString(unwantedBiomesInSpawnKey,
-							  "none",
-							  "customspawn.config.unwantedBiomes.desc",
-							  "customspawn.config.unwantedBiomes.example");
+							  "none");
 		register(unwantedBiomesInSpawnKey, Type.MUL_STRING, "customspawn.config.unwantedBiomes.title", "none", 0, 8, "customspawn.config.unwantedBiomes.shortdesc", "customspawn.config.category.unwanted");
 
 		for (BiomeGenBase biome : CustomSpawnAddon.allBiomes) {
@@ -43,20 +39,20 @@ public class ConfigUtils {
 			boolean defaultValue = !HardcoreSpawnUtils.blacklistedBiomes.contains(biome);
 
 			config.registerString(path, String.valueOf(defaultValue));
-			register(path, Type.BOOLEAN, "customspawn.biome." + name, defaultValue, 0, 8, "customspawn.config.suitableBiome.desc", "customspawn.config.category.suitable");		}
+			register(path, Type.BOOLEAN, "customspawn.biome." + name, defaultValue, 0, 8, "customspawn.config.suitableBiome.desc", "customspawn.config.category.suitable");
+		}
 
 		config.registerString(onlyBiomeKey,
-							  "none",
-							  "customspawn.config.onlyBiome.desc");
+							  "none");
 		register(onlyBiomeKey, Type.STRING, "customspawn.config.onlyBiome.title", "none", 0, 8, "customspawn.config.onlyBiome.shortdesc", "");
 
-		config.registerString(rangeKey, "2048", "customspawn.config.range.desc");
+		config.registerString(rangeKey, "2048");
 		register(rangeKey, Type.INT, "customspawn.config.range.title", 2048, 512, 8192, "customspawn.config.range.shortdesc", "");
 
-		config.registerString(scanStepKey, "128", "customspawn.config.scanStep.desc");
+		config.registerString(scanStepKey, "128");
 		register(scanStepKey, Type.INT, "customspawn.config.scanStep.title", 128, 16, 256, "customspawn.config.scanStep.shortdesc", "");
 
-		config.registerString(affectHRKey, "false", "customspawn.config.affectHR.desc");
+		config.registerString(affectHRKey, "false");
 		register(affectHRKey, Type.BOOLEAN, "customspawn.config.affectHR.title", false, 0, 8, "customspawn.config.affectHR.shortdesc", "");
 	}
 	
