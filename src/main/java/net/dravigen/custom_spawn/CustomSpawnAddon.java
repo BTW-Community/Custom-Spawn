@@ -13,8 +13,8 @@ public class CustomSpawnAddon extends BTWAddon {
 	public static ChunkPosition customSpawnCoord = null;
 	public static int attempts = 0;
 	
-	public static int range = 2048;
-	public static int scanStep = 128;
+	public static int range = 4096;
+	public static int scanStep = 64;
 	public static Set<String> spawneableBiomes = new TreeSet<>();
 	public static Set<String> unSpawneableBiomes = new TreeSet<>();
 	public static List<String> wantedBiomesInSpawn = new ArrayList<>();

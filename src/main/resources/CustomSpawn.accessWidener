@@ -1,6 +1,5 @@
 accessWidener v1 named
 accessible field net/minecraft/src/WorldChunkManager genBiomes Lnet/minecraft/src/GenLayer;
-accessible field api/config/AddonConfig currentConfig Lcom/typesafe/config/Config;
 accessible field net/minecraft/src/MapGenStronghold structureCoords [Lnet/minecraft/src/ChunkCoordIntPair;
 accessible field net/minecraft/src/MapGenStronghold ranBiomeCheck Z
 accessible method net/minecraft/src/MapGenStronghold canSpawnStructureAtCoords (II)Z

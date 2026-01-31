@@ -30,14 +30,17 @@ public class ConfigUpdater {
 				return;
 			}
 			
-			Config currentConfig = addonConfig.currentConfig;
+			Field configField = AddonConfig.class.getDeclaredField("currentConfig");
+			configField.setAccessible(true);
+			Config currentConfig = (Config) configField.get(addonConfig);
 			
 			String stringValue = String.valueOf(newValue);
 			
 			ConfigValue oldValue = currentConfig.getValue(path);
 			ConfigValue newValueWithOrigin = ConfigValueFactory.fromAnyRef(stringValue).withOrigin(oldValue.origin());
 			
-			addonConfig.currentConfig = currentConfig.withValue(path, newValueWithOrigin);
+			Config updatedConfig = currentConfig.withValue(path, newValueWithOrigin);
+			configField.set(addonConfig, updatedConfig);
 			
 			ConfigUtils.updateInternalConfigs();
 		} catch (Exception e) {
