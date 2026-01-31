@@ -11,19 +11,19 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.List;
 import java.util.Random;
 
-import static net.dravigen.custom_spawn.CustomSpawnAddon.*;
+import static net.dravigen.custom_spawn.CustomSpawnAddon.customSpawnCoord;
 
 @Mixin(MapGenStronghold.class)
 public abstract class MapGenStrongholdMixin extends MapGenStructure {
+	
 	@Redirect(method = "canSpawnStructureAtCoords", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/WorldChunkManager;findBiomePosition(IIILjava/util/List;Ljava/util/Random;)Lnet/minecraft/src/ChunkPosition;"))
 	private ChunkPosition spawnAroundCustomSpawn(WorldChunkManager instance, int x, int z, int range, List list,
 			Random rand) {
-		if (!createdSpawn) {
-			customSpawnCoord = createCustomSpawn(instance);
-			
-			createdSpawn = true;
+		if (customSpawnCoord != null) {
+			return instance.findBiomePosition(x + customSpawnCoord.x, z + customSpawnCoord.z, range, list, rand);
 		}
-		
-		return instance.findBiomePosition(x + customSpawnCoord.x, z + customSpawnCoord.z, range, list, rand);
+		else {
+			return instance.findBiomePosition(x, z, range, list, rand);
+		}
 	}
 }

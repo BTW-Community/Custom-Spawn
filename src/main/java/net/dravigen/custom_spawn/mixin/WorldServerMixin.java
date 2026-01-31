@@ -3,6 +3,7 @@ package net.dravigen.custom_spawn.mixin;
 import net.minecraft.src.*;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -10,10 +11,14 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.List;
 import java.util.Random;
 
-import static net.dravigen.custom_spawn.CustomSpawnAddon.*;
+import static net.dravigen.custom_spawn.CustomSpawnAddon.createCustomSpawn;
+import static net.dravigen.custom_spawn.CustomSpawnAddon.customSpawnCoord;
 
 @Mixin(WorldServer.class)
 public abstract class WorldServerMixin extends World {
+	@Shadow
+	public ChunkProviderServer theChunkProviderServer;
+	
 	public WorldServerMixin(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider,
 			WorldSettings par4WorldSettings, Profiler par5Profiler, ILogAgent par6ILogAgent) {
 		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler, par6ILogAgent);
@@ -55,15 +60,13 @@ public abstract class WorldServerMixin extends World {
 	
 	@Unique
 	private @NotNull ChunkPosition getSpawnSpot(WorldChunkManager instance) {
-		if (createdSpawn) {
-			createdSpawn = false;
-		}
-		else {
-			customSpawnCoord = createCustomSpawn(instance);
-			
-			createdSpawn = true;
-		}
+		customSpawnCoord = createCustomSpawn((WorldServer) (Object) this, instance);
 		
-		return findValidSpawnSpot(this, customSpawnCoord.x, customSpawnCoord.z);
+		MapGenStronghold stronghold = ((ChunkProviderGenerate) this.theChunkProviderServer.getCurrentChunkProvider()).getStrongholdGenerator();
+		stronghold.ranBiomeCheck = false;
+		stronghold.canSpawnStructureAtCoords(0, 0);
+		
+		return customSpawnCoord;
+		//return findValidSpawnSpot(this, customSpawnCoord.x, customSpawnCoord.z);
 	}
 }

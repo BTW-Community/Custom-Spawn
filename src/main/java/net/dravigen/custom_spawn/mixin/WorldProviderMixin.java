@@ -18,23 +18,24 @@ public class WorldProviderMixin {
 	
 	@Inject(method = "canCoordinateBeSpawn", at = @At("RETURN"), cancellable = true)
 	private void canSpawnHereFromList(int par1, int par2, CallbackInfoReturnable<Boolean> cir) {
-		if (CustomSpawnAddon.spawneableBiomes.contains(this.worldObj.getBiomeGenForCoords(par1, par2).biomeName.replace(
-				" ",
-				""))) {
-			int id = this.worldObj.getFirstUncoveredBlock(par1, par2);
-			
-			String onlyBiome = CustomSpawnAddon.onlyBiome;
-			cir.setReturnValue(id == Block.grass.blockID ||
-									   id == Block.waterStill.blockID &&
-											   (onlyBiome.equalsIgnoreCase(BiomeGenBase.ocean.biomeName.replace(" ",
-																												"")) ||
-													   onlyBiome.equalsIgnoreCase(BiomeGenBase.river.biomeName.replace(
-															   " ",
-															   ""))) ||
-									   id == Block.ice.blockID &&
-											   (onlyBiome.equalsIgnoreCase(BiomeGenBase.frozenRiver.biomeName.replace(
-													   " ",
-													   ""))));
+		int var3 = 63;
+		while (!this.worldObj.isAirBlock(par1, var3 + 1, par2)) {
+			++var3;
 		}
+		int id = this.worldObj.getBlockId(par1, var3, par2);
+		
+		String onlyBiome = CustomSpawnAddon.onlyBiome;
+		cir.setReturnValue((id == Block.grass.blockID ||
+				id == Block.stone.blockID ||
+				id == Block.dirt.blockID ||
+				id == Block.gravel.blockID ||
+				id == Block.sand.blockID) && worldObj.getBlockId(par1, var3 + 1, par2) != Block.waterStill.blockID ||
+								   id == Block.waterStill.blockID &&
+										   (onlyBiome.equalsIgnoreCase(BiomeGenBase.ocean.biomeName.replace(" ", "")) ||
+												   onlyBiome.equalsIgnoreCase(BiomeGenBase.river.biomeName.replace(" ",
+																												   ""))) ||
+								   id == Block.ice.blockID &&
+										   (onlyBiome.equalsIgnoreCase(BiomeGenBase.frozenRiver.biomeName.replace(" ",
+																												  ""))));
 	}
 }

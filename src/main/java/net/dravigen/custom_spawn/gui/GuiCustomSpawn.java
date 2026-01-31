@@ -40,9 +40,8 @@ public class GuiCustomSpawn extends GuiScreen {
 		this.categorizedSettings = new TreeMap<>();
 		
 		for (BaseSetting setting : this.settingList) {
-			String category = setting.category() == null || setting.category().isEmpty()
-							  ? I18n.getString("customspawn.config.category.general")
-							  : setting.category();
+			String category = setting.category() == null || setting.category().isEmpty() ? I18n.getString(
+					"customspawn.config.category.general") : setting.category();
 			this.categorizedSettings.computeIfAbsent(I18n.getString(category), k -> new ArrayList<>()).add(setting);
 		}
 	}

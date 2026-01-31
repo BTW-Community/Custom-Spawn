@@ -30,6 +30,7 @@ customspawn.biome.ExtremeHillsEdge=Extreme Hills Edge
 customspawn.biome.Jungle=Jungle
 customspawn.biome.JungleHills=Jungle Hills
 
+customspawn.loading.attempts=Searching... (%d)
 customspawn.config.category.general=0.General
 
 customspawn.config.wantedBiomes.title=Wanted Biomes in Spawn

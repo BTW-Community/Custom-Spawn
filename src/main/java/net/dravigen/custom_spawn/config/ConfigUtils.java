@@ -78,9 +78,9 @@ public class ConfigUtils {
 		register(rangeKey,
 				 Type.INT,
 				 "customspawn.config.range.title",
-				 2048,
-				 512,
-				 8192,
+				 4096,
+				 1024,
+				 16384,
 				 "customspawn.config.range.shortdesc",
 				 "");
 		
@@ -88,7 +88,7 @@ public class ConfigUtils {
 		register(scanStepKey,
 				 Type.INT,
 				 "customspawn.config.scanStep.title",
-				 128,
+				 64,
 				 16,
 				 256,
 				 "customspawn.config.scanStep.shortdesc",

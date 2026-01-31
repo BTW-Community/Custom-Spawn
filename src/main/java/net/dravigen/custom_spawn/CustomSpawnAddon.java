@@ -6,14 +6,13 @@ import api.config.AddonConfig;
 import net.dravigen.custom_spawn.config.ConfigUtils;
 import net.minecraft.src.*;
 import org.jetbrains.annotations.NotNull;
-import org.spongepowered.asm.mixin.Unique;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 public class CustomSpawnAddon extends BTWAddon {
 	public static ChunkPosition customSpawnCoord = null;
-	public static boolean createdSpawn = false;
+	public static int attempts = 0;
+	
 	public static int range = 2048;
 	public static int scanStep = 128;
 	public static Set<String> spawneableBiomes = new TreeSet<>();
@@ -28,6 +27,7 @@ public class CustomSpawnAddon extends BTWAddon {
 	public static Set<String> unwantedBiomesFound = new TreeSet<>();
 	public static int loadingProgress = 0;
 	private static CustomSpawnAddon instance;
+	
 	public CustomSpawnAddon() {
 		super();
 		instance = this;
@@ -37,8 +37,11 @@ public class CustomSpawnAddon extends BTWAddon {
 		return instance;
 	}
 	
-	@Unique
-	public static @NotNull ChunkPosition createCustomSpawn(WorldChunkManager instance) {
+	public static @NotNull ChunkPosition createCustomSpawn(WorldChunkManager manager) {
+		return createCustomSpawn(null, manager);
+	}
+	
+	public static @NotNull ChunkPosition createCustomSpawn(WorldServer server, WorldChunkManager manager) {
 		List<String> uwBiomes = new ArrayList<>(CustomSpawnAddon.unwantedBiomesInSpawn);
 		List<String> wBiomes = new ArrayList<>(CustomSpawnAddon.wantedBiomesInSpawn);
 		
@@ -49,37 +52,28 @@ public class CustomSpawnAddon extends BTWAddon {
 			uwBiomes.remove(0);
 		}
 		
-		return findBestSpawnLocationWithBiomesCriteria(instance, 0, 0, CustomSpawnAddon.range, wBiomes, uwBiomes);
+		return findBestSpawnLocationWithBiomesCriteria(server, manager, 0, 0, range, wBiomes, uwBiomes);
 	}
 	
-	@Unique
-	public static ChunkPosition findBestSpawnLocationWithBiomesCriteria(WorldChunkManager manager, int originX,
-			int originZ, int searchRadius, List<String> wantedBiomesInSpawn, List<String> unwantedBiomesInSpawn) {
+	public static ChunkPosition findBestSpawnLocationWithBiomesCriteria(WorldServer server, WorldChunkManager manager,
+			int originX, int originZ, int searchRadius, List<String> wantedBiomesInSpawn,
+			List<String> unwantedBiomesInSpawn) {
 		IntCache.resetIntCache();
 		
+		attempts = 0;
 		allBiomeFound.clear();
 		wantedBiomesFound.clear();
 		unwantedBiomesFound.clear();
-		
 		final int CHUNK_SIZE_BLOCKS = 16;
-		final int EVALUATION_CHUNK_WIDTH = 12;
+		final int EVALUATION_CHUNK_WIDTH = 17;
 		final int EVALUATION_HALF_WIDTH = (EVALUATION_CHUNK_WIDTH * CHUNK_SIZE_BLOCKS) / 2;
 		final int SCAN_STEP = scanStep;
 		
 		ChunkPosition bestGlobalPosition = null;
 		int highestGlobalScore = -1;
 		boolean foundBestSpawn = false;
-		int maxScore = wantedBiomesInSpawn.size();
-		GenLayer genBiomes;
-		
-		try {
-			Field configField = WorldChunkManager.class.getDeclaredField("genBiomes");
-			configField.setAccessible(true);
-			genBiomes = (GenLayer) configField.get(manager);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		
+		int maxScore = wantedBiomesInSpawn.size() * 2;
+		GenLayer genBiomes = manager.genBiomes;
 		
 		for (int r = 0; r <= searchRadius; r += SCAN_STEP) {
 			if (foundBestSpawn) break;
@@ -107,6 +101,60 @@ public class CustomSpawnAddon extends BTWAddon {
 							continue;
 						}
 					}
+					
+					if (server != null) {
+						attempts++;
+					}
+					
+					boolean canSpawnInChunk = false;
+					
+					if (server != null) {
+						int x = potentialCenterX;
+						int z = potentialCenterZ;
+						int stepLength = 1;
+						int count = 0;
+						int direction = 0;
+						
+						int i = 16;
+						int maxIterations = i * i;
+						int iterations = 0;
+						
+						while (iterations <= maxIterations) {
+							if (server.provider.canCoordinateBeSpawn(x, z)) {
+								canSpawnInChunk = true;
+								
+								break;
+							}
+							
+							switch (direction) {
+								case 0 -> x++;
+								case 1 -> z++;
+								case 2 -> x--;
+								case 3 -> z--;
+							}
+							
+							count++;
+							
+							if (count == stepLength) {
+								count = 0;
+								direction = (direction + 1) % 4;
+								
+								if (direction == 0 || direction == 2) {
+									stepLength++;
+								}
+							}
+							
+							iterations++;
+						}
+						
+						if (iterations != maxIterations) {
+							potentialCenterX = x;
+							potentialCenterZ = z;
+						}
+					}
+					else canSpawnInChunk = true;
+					
+					if (!canSpawnInChunk) continue;
 					
 					int centerBiomeX = potentialCenterX >> 2;
 					int centerBiomeZ = potentialCenterZ >> 2;
@@ -143,13 +191,13 @@ public class CustomSpawnAddon extends BTWAddon {
 						if (Arrays.stream(ConfigUtils.getString(ConfigUtils.wantedBiomesInSpawnKey).split(","))
 								.anyMatch(s -> s.equalsIgnoreCase(name))) {
 							foundBiomes.add(name);
-							currentDiversityScore += 1;
+							currentDiversityScore += 2;
 						}
 						
 						if (Arrays.stream(ConfigUtils.getString(ConfigUtils.unwantedBiomesInSpawnKey).split(","))
 								.anyMatch(s -> s.equalsIgnoreCase(name))) {
 							foundBiomes.add(name);
-							currentDiversityScore -= 3;
+							currentDiversityScore -= 1;
 						}
 					}
 					
@@ -190,12 +238,13 @@ public class CustomSpawnAddon extends BTWAddon {
 					allBiomeFound.add(currentBiome);
 				}
 			}
+			
+			attempts = 0;
 		}
 		
 		return bestGlobalPosition;
 	}
 	
-	@Unique
 	public static ChunkPosition findValidSpawnSpot(World server, int x0, int z0) {
 		int x = x0;
 		int z = z0;
@@ -203,7 +252,8 @@ public class CustomSpawnAddon extends BTWAddon {
 		int count = 0;
 		int direction = 0;
 		
-		int maxIterations = 16 * 3 * 16 * 3;
+		int i = 16;
+		int maxIterations = i * i;
 		int iterations = 0;
 		
 		while (iterations < maxIterations) {

@@ -30,7 +30,8 @@ customspawn.biome.ExtremeHillsEdge=高地边缘
 customspawn.biome.Jungle=丛林
 customspawn.biome.JungleHills=丛林山丘
 
-customspawn.config.category.general=通用设置
+customspawn.loading.attempts=搜索中... (%d)
+customspawn.config.category.general=0.通用设置
 
 customspawn.config.wantedBiomes.title=出生点所需生物群系
 customspawn.config.wantedBiomes.shortdesc=应出现在出生点的生物群系列表

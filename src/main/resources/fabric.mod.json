@@ -28,6 +28,7 @@
   "mixins": [
     "custom_spawn.mixins.json"
   ],
+  "accessWidener" : "CustomSpawn.accessWidener",
   "depends": {
     "fabricloader": ">=0.14.19",
     "minecraft": "1.6.4"
