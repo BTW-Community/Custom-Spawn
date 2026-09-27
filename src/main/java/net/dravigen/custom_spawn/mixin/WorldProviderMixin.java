@@ -1,6 +1,8 @@
 package net.dravigen.custom_spawn.mixin;
 
+import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import net.dravigen.custom_spawn.CustomSpawnAddon;
+import net.dravigen.custom_spawn.config.ConfigUtils;
 import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.Block;
 import net.minecraft.src.World;
@@ -18,24 +20,18 @@ public class WorldProviderMixin {
 	
 	@Inject(method = "canCoordinateBeSpawn", at = @At("RETURN"), cancellable = true)
 	private void canSpawnHereFromList(int par1, int par2, CallbackInfoReturnable<Boolean> cir) {
-		int var3 = 63;
-		while (!this.worldObj.isAirBlock(par1, var3 + 1, par2)) {
-			++var3;
-		}
-		int id = this.worldObj.getBlockId(par1, var3, par2);
+		if (ConfigUtils.getBoolean(ConfigUtils.disableCustomSpawnKey)) return;
+		
+		int id = this.worldObj.getFirstUncoveredBlock(par1, par2);
 		
 		String onlyBiome = CustomSpawnAddon.onlyBiome;
-		cir.setReturnValue((id == Block.grass.blockID ||
-				id == Block.stone.blockID ||
-				id == Block.dirt.blockID ||
-				id == Block.gravel.blockID ||
-				id == Block.sand.blockID) && worldObj.getBlockId(par1, var3 + 1, par2) != Block.waterStill.blockID ||
-								   id == Block.waterStill.blockID &&
-										   (onlyBiome.equalsIgnoreCase(BiomeGenBase.ocean.biomeName.replace(" ", "")) ||
-												   onlyBiome.equalsIgnoreCase(BiomeGenBase.river.biomeName.replace(" ",
-																												   ""))) ||
+		BiomeGenBase biome = BiomeAPI.findBiomeByName(onlyBiome);
+		
+		cir.setReturnValue(id == Block.grass.blockID ||
+								   (id == Block.waterStill.blockID &&
+										   (biome == BiomeGenBase.ocean || biome == BiomeGenBase.river) ||
 								   id == Block.ice.blockID &&
-										   (onlyBiome.equalsIgnoreCase(BiomeGenBase.frozenRiver.biomeName.replace(" ",
-																												  ""))));
+										   (biome == BiomeGenBase.frozenRiver || biome == BiomeGenBase.frozenOcean)) ||
+								   (id == Block.sand.blockID && biome == BiomeGenBase.desert || biome == BiomeGenBase.beach));
 	}
 }

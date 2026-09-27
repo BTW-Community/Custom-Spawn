@@ -1,8 +1,8 @@
 package net.dravigen.custom_spawn.gui;
 
+import api.config.AddonConfig;
 import net.dravigen.custom_spawn.CustomSpawnAddon;
 import net.dravigen.custom_spawn.config.BaseSetting;
-import net.dravigen.custom_spawn.config.ConfigUpdater;
 import net.dravigen.custom_spawn.config.ConfigUtils;
 import net.dravigen.custom_spawn.util.LocalizationUtil;
 import net.minecraft.src.*;
@@ -68,6 +68,18 @@ public class GuiCustomSpawn extends GuiScreen {
 							   : (int) (currentValue + delta * (setting.max() / 16));
 				
 				newValue -= (int) (newValue % (setting.max() / 16));
+				
+				newValue = (int) Math.max(newValue, setting.min());
+				newValue = (int) Math.min(newValue, setting.max());
+				
+				ConfigUtils.setValue(setting.id(), newValue);
+			}
+			else if (setting.type() == ConfigUtils.Type.INT_SPECIAL) {
+				int currentValue = ConfigUtils.getInt(setting.id());
+				
+				int delta = (int) ((actionType == 0) ? -setting.min() : setting.min());
+				
+				int newValue = shift ? (actionType == 0) ? currentValue / 2 : currentValue * 2 : (currentValue + delta);
 				
 				newValue = (int) Math.max(newValue, setting.min());
 				newValue = (int) Math.min(newValue, setting.max());
@@ -268,7 +280,7 @@ public class GuiCustomSpawn extends GuiScreen {
 					int itemMouseYEnd = Math.min(scrollYEnd, itemY + ITEM_HEIGHT);
 					
 					if (mouseX >= scrollXStart &&
-							mouseX <= this.width / 2 &&
+							mouseX <= scrollXEnd &&
 							mouseY >= itemMouseYStart &&
 							mouseY <= itemMouseYEnd) {
 						String descKey = setting.description();
@@ -311,7 +323,7 @@ public class GuiCustomSpawn extends GuiScreen {
 						toggleButton.drawButton(this.mc, mouseX, mouseY);
 						this.buttonList.add(toggleButton);
 					}
-					else if (setting.type() == ConfigUtils.Type.INT) {
+					else if (setting.type() == ConfigUtils.Type.INT || setting.type() == ConfigUtils.Type.INT_SPECIAL) {
 						int val = ConfigUtils.getInt(setting.id());
 						String valText = String.valueOf(val);
 						
@@ -564,7 +576,11 @@ public class GuiCustomSpawn extends GuiScreen {
 				handleSettingInteraction(button.id);
 			}
 			else if (button.id == buttonIDStart - 10) {
-				ConfigUpdater.saveConfig(CustomSpawnAddon.getInstance().addonConfig);
+				AddonConfig addonConfig = CustomSpawnAddon.getInstance().addonConfig;
+				
+				addonConfig.hasChanged = true;
+				addonConfig.readAndWriteConfig();
+				
 				saved = true;
 				timeSinceSaved = System.currentTimeMillis();
 			}
@@ -632,24 +648,38 @@ public class GuiCustomSpawn extends GuiScreen {
 	}
 	
 	private void drawTooltip(String text, int x, int y) {
+		List<String> tooltips = new ArrayList<>();
 		int padding = 3;
-		int textWidth = this.fontRenderer.getStringWidth(text);
-		int tooltipWidth = textWidth + 2 * padding;
 		
 		int tooltipX = x + 12;
 		int tooltipY = y - 10;
 		
-		if (tooltipX + tooltipWidth + padding > this.width) {
-			tooltipX = x - 12 - tooltipWidth;
-		}
-		
 		int bgColor = 0xF0100010;
 		int borderColor = 0x505000FF;
+		
+		int i = 0;
+		for (String s : text.split(" ")) {
+			if (i < tooltips.size() &&
+					tooltipX + fontRenderer.getStringWidth(tooltips.get(i) + s) + 2 * padding + padding > this.width) {
+				i++;
+			}
+			
+			if (i >= tooltips.size()) tooltips.add(s);
+			else tooltips.set(i, tooltips.get(i).concat(" " + s));
+		}
+		
+		int textWidth = 0;
+		
+		for (String s : tooltips) {
+			textWidth = Math.max(fontRenderer.getStringWidth(s), textWidth);
+		}
+		
+		i++;
 		
 		drawRect(tooltipX - padding,
 				 tooltipY - padding,
 				 tooltipX + textWidth + padding,
-				 tooltipY + this.fontRenderer.FONT_HEIGHT + padding,
+				 tooltipY + this.fontRenderer.FONT_HEIGHT * i + padding,
 				 bgColor);
 		
 		drawRect(tooltipX - padding,
@@ -658,22 +688,27 @@ public class GuiCustomSpawn extends GuiScreen {
 				 tooltipY - padding,
 				 borderColor);
 		drawRect(tooltipX - padding,
-				 tooltipY + this.fontRenderer.FONT_HEIGHT + padding,
+				 tooltipY + this.fontRenderer.FONT_HEIGHT * i + padding,
 				 tooltipX + textWidth + padding,
-				 tooltipY + this.fontRenderer.FONT_HEIGHT + padding + 1,
+				 tooltipY + this.fontRenderer.FONT_HEIGHT * i + padding + 1,
 				 borderColor);
 		
 		drawRect(tooltipX - padding - 1,
 				 tooltipY - padding,
 				 tooltipX - padding,
-				 tooltipY + this.fontRenderer.FONT_HEIGHT + padding,
+				 tooltipY + this.fontRenderer.FONT_HEIGHT * i + padding,
 				 borderColor);
 		drawRect(tooltipX + textWidth + padding,
 				 tooltipY - padding,
 				 tooltipX + textWidth + padding + 1,
-				 tooltipY + this.fontRenderer.FONT_HEIGHT + padding,
+				 tooltipY + this.fontRenderer.FONT_HEIGHT * i + padding,
 				 borderColor);
 		
-		this.fontRenderer.drawStringWithShadow(text, tooltipX, tooltipY, 0xFFFFFF);
+		for (int j = 0; j < tooltips.size(); j++) {
+			this.fontRenderer.drawStringWithShadow(tooltips.get(j),
+												   tooltipX,
+												   tooltipY + this.fontRenderer.FONT_HEIGHT * j,
+												   0xFFFFFF);
+		}
 	}
 }

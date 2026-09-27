@@ -1,5 +1,6 @@
 package net.dravigen.custom_spawn.mixin;
 
+import net.dravigen.custom_spawn.config.ConfigUtils;
 import net.minecraft.src.ChunkPosition;
 import net.minecraft.src.MapGenStronghold;
 import net.minecraft.src.MapGenStructure;
@@ -19,7 +20,7 @@ public abstract class MapGenStrongholdMixin extends MapGenStructure {
 	@Redirect(method = "canSpawnStructureAtCoords", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/WorldChunkManager;findBiomePosition(IIILjava/util/List;Ljava/util/Random;)Lnet/minecraft/src/ChunkPosition;"))
 	private ChunkPosition spawnAroundCustomSpawn(WorldChunkManager instance, int x, int z, int range, List list,
 			Random rand) {
-		if (customSpawnCoord != null) {
+		if (customSpawnCoord != null && !ConfigUtils.getBoolean(ConfigUtils.disableCustomSpawnKey)) {
 			return instance.findBiomePosition(x + customSpawnCoord.x, z + customSpawnCoord.z, range, list, rand);
 		}
 		else {

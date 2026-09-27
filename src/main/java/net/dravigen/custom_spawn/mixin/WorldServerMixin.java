@@ -1,5 +1,6 @@
 package net.dravigen.custom_spawn.mixin;
 
+import net.dravigen.custom_spawn.config.ConfigUtils;
 import net.minecraft.src.*;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,8 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.List;
 import java.util.Random;
 
-import static net.dravigen.custom_spawn.CustomSpawnAddon.createCustomSpawn;
-import static net.dravigen.custom_spawn.CustomSpawnAddon.customSpawnCoord;
+import static net.dravigen.custom_spawn.CustomSpawnAddon.*;
 
 @Mixin(WorldServer.class)
 public abstract class WorldServerMixin extends World {
@@ -26,36 +26,44 @@ public abstract class WorldServerMixin extends World {
 	
 	@Redirect(method = "createSpawnPosition", at = @At(value = "INVOKE", target = "Ljava/util/List;contains(Ljava/lang/Object;)Z"))
 	private boolean forceSpawn1(List instance, Object o) {
-		return true;
+		return useNormalSpawnLogic() ? instance.contains(o) : true;
 	}
-	
 	
 	@Redirect(method = "createSpawnPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/WorldProvider;canCoordinateBeSpawn(II)Z"))
 	private boolean forceSpawn2(WorldProvider instance, int par1, int par2) {
-		return true;
+		return useNormalSpawnLogic() ? instance.canCoordinateBeSpawn(par1, par2) : true;
 	}
 	
 	@Redirect(method = "createSpawnPositionLocked", at = @At(value = "INVOKE", target = "Ljava/util/List;contains(Ljava/lang/Object;)Z"))
 	private boolean forceSpawn3(List instance, Object o) {
-		return true;
+		return useNormalSpawnLogic() ? instance.contains(o) : true;
 	}
 	
 	
 	@Redirect(method = "createSpawnPositionLocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/WorldProvider;canCoordinateBeSpawn(II)Z"))
 	private boolean forceSpawn4(WorldProvider instance, int par1, int par2) {
-		return true;
+		return useNormalSpawnLogic() ? instance.canCoordinateBeSpawn(par1, par2) : true;
 	}
 	
 	@Redirect(method = "createSpawnPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/WorldChunkManager;findBiomePosition(IIILjava/util/List;Ljava/util/Random;)Lnet/minecraft/src/ChunkPosition;"))
 	private ChunkPosition customSpawn(WorldChunkManager instance, int var1, int var2, int var3, List list,
 			Random par1) {
+		if (useNormalSpawnLogic()) return instance.findBiomePosition(var1, var2, var3, list, par1);
+		
 		return getSpawnSpot(instance);
 	}
 	
 	@Redirect(method = "createSpawnPositionLocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/WorldChunkManager;findBiomePosition(IIILjava/util/List;Ljava/util/Random;)Lnet/minecraft/src/ChunkPosition;"))
 	private ChunkPosition customSpawnLocked(WorldChunkManager instance, int var1, int var2, int var3, List list,
 			Random par1) {
+		if (useNormalSpawnLogic()) return instance.findBiomePosition(var1, var2, var3, list, par1);
+		
 		return getSpawnSpot(instance);
+	}
+	
+	@Unique
+	private static boolean useNormalSpawnLogic() {
+		return isUsingFilteredSeed() || ConfigUtils.getBoolean(ConfigUtils.disableCustomSpawnKey);
 	}
 	
 	@Unique
@@ -67,6 +75,5 @@ public abstract class WorldServerMixin extends World {
 		stronghold.canSpawnStructureAtCoords(0, 0);
 		
 		return customSpawnCoord;
-		//return findValidSpawnSpot(this, customSpawnCoord.x, customSpawnCoord.z);
 	}
 }

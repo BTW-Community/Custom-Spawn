@@ -1,6 +1,7 @@
 package net.dravigen.custom_spawn.mixin;
 
 import net.dravigen.custom_spawn.CustomSpawnAddon;
+import net.dravigen.custom_spawn.config.ConfigUtils;
 import net.minecraft.src.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,6 +19,8 @@ public abstract class ServerConfigurationManagerMixin {
 	
 	@Inject(method = "initializeConnectionToPlayer", at = @At(value = "INVOKE", target = "Lapi/AddonHandler;serverPlayerConnectionInitialized(Lnet/minecraft/src/NetServerHandler;Lnet/minecraft/src/EntityPlayerMP;)V", shift = At.Shift.AFTER))
 	private void sendFoundBiomesInSpawn(INetworkManager par1INetworkManager, EntityPlayerMP mp, CallbackInfo ci) {
+		if (ConfigUtils.getBoolean(ConfigUtils.hideSpawnMsgKey)) return;
+		
 		if (allBiomeFound.isEmpty() && wantedBiomesFound.isEmpty() && unwantedBiomesFound.isEmpty()) return;
 		
 		List<String> uwBiomes = new ArrayList<>(CustomSpawnAddon.unwantedBiomesInSpawn);

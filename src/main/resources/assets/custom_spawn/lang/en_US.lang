@@ -30,22 +30,34 @@ customspawn.biome.ExtremeHillsEdge=Extreme Hills Edge
 customspawn.biome.Jungle=Jungle
 customspawn.biome.JungleHills=Jungle Hills
 
+customspawn.loading.abort=Abort
 customspawn.loading.attempts=Searching... (%d)
+
+customspawn.msg.wantedFound=Wanted Biomes Found: (%s/%s)
+customspawn.msg.unwantedFound=Unwanted Biomes Found: (%s/%s)
+customspawn.msg.otherFound=Other Biomes Found: (%s)
+
 customspawn.config.category.general=0.General
 
-customspawn.config.wantedBiomes.title=Wanted Biomes in Spawn
-customspawn.config.wantedBiomes.shortdesc=List of every biomes that should be in Spawn
-customspawn.config.category.wanted=1.Wanted Biomes
+customspawn.config.disableCustomSpawn.title=Disable Custom Spawn
 
-customspawn.config.unwantedBiomes.title=Unwanted Biomes in Spawn
-customspawn.config.unwantedBiomes.shortdesc=List of biomes that should NOT be in Spawn
-customspawn.config.category.unwanted=2.Unwanted biomes
-
-customspawn.config.suitableBiome.desc=Player can spawn in: %s
-customspawn.config.category.suitable=3.Suitable Biomes
+customspawn.config.hideSpawnMsg.title=Hide biomes message
+customspawn.config.hideSpawnMsg.shortdesc=Hide Spawn's biomes message on world creation
 
 customspawn.config.onlyBiome.title=Spawn Only In Biome
 customspawn.config.onlyBiome.shortdesc=The only biome the player should spawn in
+
+customspawn.config.seedFilter.title=Seed filtering method
+customspawn.config.seedFilter.shortdesc=Cycle through seeds instead of moving Spawn to a suitable place
+
+
+customspawn.config.category.seedFiltering=1.Seed filtering method
+
+customspawn.config.seedLimit.title=Seeds Limit
+customspawn.config.seedLimit.shortdesc=How many seed will get cycled before stopping
+
+
+customspawn.config.category.seedScanning=2.World scanning method
 
 customspawn.config.range.title=Scan Range
 customspawn.config.range.shortdesc=Range of valid spawn search
@@ -53,9 +65,19 @@ customspawn.config.range.shortdesc=Range of valid spawn search
 customspawn.config.scanStep.title=Scan Interval
 customspawn.config.scanStep.shortdesc=How many blocks are skipped before attempting another spawn
 
-customspawn.config.affectHR.title=Affect Hardcore Respawn
-customspawn.config.affectHR.shortdesc=Should the suitable biome list impact hardcore respawn
 
-customspawn.msg.wantedFound=Wanted Biomes Found: (%s/%s)
-customspawn.msg.unwantedFound=Unwanted Biomes Found: (%s/%s)
-customspawn.msg.otherFound=Other Biomes Found: (%s)
+customspawn.config.category.wanted=3.Wanted Biomes
+
+customspawn.config.wantedBiomes.title=Wanted Biomes in Spawn
+customspawn.config.wantedBiomes.shortdesc=List of every biomes that should be in Spawn
+
+
+customspawn.config.category.unwanted=4.Unwanted biomes
+
+customspawn.config.unwantedBiomes.title=Unwanted Biomes in Spawn
+customspawn.config.unwantedBiomes.shortdesc=List of biomes that should NOT be in Spawn
+
+
+customspawn.config.category.suitable=5.Suitable Biomes
+
+customspawn.config.suitableBiome.desc=Player can spawn in: %s

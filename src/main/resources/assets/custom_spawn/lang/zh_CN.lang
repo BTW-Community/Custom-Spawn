@@ -35,14 +35,14 @@ customspawn.config.category.general=0.通用设置
 
 customspawn.config.wantedBiomes.title=出生点所需生物群系
 customspawn.config.wantedBiomes.shortdesc=应出现在出生点的生物群系列表
-customspawn.config.category.wanted=1.需要的生物群系
+customspawn.config.category.wanted=3.需要的生物群系
 
 customspawn.config.unwantedBiomes.title=出生点不希望的生物群系
 customspawn.config.unwantedBiomes.shortdesc=不应出现在出生点的生物群系列表
-customspawn.config.category.unwanted=2.不需要的生物群系
+customspawn.config.category.unwanted=4.不需要的生物群系
 
 customspawn.config.suitableBiome.desc=玩家可在此生物群系生成：%s
-customspawn.config.category.suitable=3.可生成的生物群系
+customspawn.config.category.suitable=5.可生成的生物群系
 
 customspawn.config.onlyBiome.title=仅在该生物群系生成
 customspawn.config.onlyBiome.shortdesc=玩家应仅在该生物群系生成
@@ -52,9 +52,6 @@ customspawn.config.range.shortdesc=出生点搜索范围
 
 customspawn.config.scanStep.title=扫描间隔
 customspawn.config.scanStep.shortdesc=进行下一次尝试前跳过的方块数
-
-customspawn.config.affectHR.title=影响硬核重生
-customspawn.config.affectHR.shortdesc=白名单是否影响硬核重生
 
 customspawn.msg.wantedFound=找到的目标生物群系：(%s/%s)
 customspawn.msg.unwantedFound=找到的不希望生物群系：(%s/%s)

@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.dravigen.custom_spawn.CustomSpawnAddon.attempts;
@@ -20,6 +21,9 @@ public abstract class LoadingScreenRendererMixin {
 	
 	@Shadow
 	private String field_73727_a;
+	
+	@Shadow
+	private String currentlyDisplayedText;
 	
 	@Inject(method = "setLoadingProgress", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/FontRenderer;drawStringWithShadow(Ljava/lang/String;III)I", ordinal = 1))
 	private void drawProgress(int par1, CallbackInfo ci) {
@@ -47,5 +51,14 @@ public abstract class LoadingScreenRendererMixin {
 		else {
 			loadingProgress = 0;
 		}
+	}
+	
+	@ModifyArg(method = "displayLoadingString", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/LoadingScreenRenderer;setLoadingProgress(I)V"))
+	private int drawProgressBar(int par1) {
+		if (this.currentlyDisplayedText.equals(I18n.getString("menu.loadingLevel")) && attempts == 0) {
+			return loadingProgress;
+		}
+		
+		return par1;
 	}
 }

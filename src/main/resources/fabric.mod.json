@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "id": "custom_spawn",
-  "version": "${version}",
-  "name": "Custom Spawn",
-  "description": "Lets you configure your ideal initial spawn location",
+  "id": "${mod_id}",
+  "version": "${version}+BTW-${btw_version}",
+  "name": "${name}",
+  "description": "Search for your ideal Spawn location !",
   "authors": [
     "DraViGen"
   ],
   "contact": {
-    "homepage": "https://github.com/DraViGen",
-    "sources": "https://github.com/BTW-Community/Custom_Spawn"
+    "homepage": "https://modrinth.com/mod/custom-spawn-btw-addon",
+    "sources": "https://github.com/BTW-Community/Custom-Spawn"
   },
   "license": "CC-BY-4.0",
   "icon": "assets/custom_spawn/icon.jpg",
@@ -31,6 +31,7 @@
   "accessWidener" : "CustomSpawn.accessWidener",
   "depends": {
     "fabricloader": ">=0.14.19",
-    "minecraft": "1.6.4"
+    "minecraft": "1.6.4",
+    "btw": ">=${btw_version}"
   }
 }

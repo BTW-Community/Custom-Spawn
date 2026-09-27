@@ -3,3 +3,4 @@ accessible field net/minecraft/src/WorldChunkManager genBiomes Lnet/minecraft/sr
 accessible field net/minecraft/src/MapGenStronghold structureCoords [Lnet/minecraft/src/ChunkCoordIntPair;
 accessible field net/minecraft/src/MapGenStronghold ranBiomeCheck Z
 accessible method net/minecraft/src/MapGenStronghold canSpawnStructureAtCoords (II)Z
+accessible field api/config/AddonConfig hasChanged Z

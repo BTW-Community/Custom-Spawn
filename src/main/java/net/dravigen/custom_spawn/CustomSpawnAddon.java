@@ -16,6 +16,7 @@ public class CustomSpawnAddon extends BTWAddon {
 	public static int range = 4096;
 	public static int scanStep = 64;
 	public static Set<String> spawneableBiomes = new TreeSet<>();
+	public static List<BiomeGenBase> spawneableBiomesGen = new ArrayList<>();
 	public static Set<String> unSpawneableBiomes = new TreeSet<>();
 	public static List<String> wantedBiomesInSpawn = new ArrayList<>();
 	public static List<String> unwantedBiomesInSpawn = new ArrayList<>();
@@ -27,6 +28,7 @@ public class CustomSpawnAddon extends BTWAddon {
 	public static Set<String> unwantedBiomesFound = new TreeSet<>();
 	public static int loadingProgress = 0;
 	private static CustomSpawnAddon instance;
+	public static boolean isSearching = false;
 	
 	public CustomSpawnAddon() {
 		super();
@@ -283,6 +285,10 @@ public class CustomSpawnAddon extends BTWAddon {
 		}
 		
 		return new ChunkPosition(x0, 0, z0);
+	}
+	
+	public static boolean isUsingFilteredSeed() {
+		return ConfigUtils.getBoolean(ConfigUtils.seedFilterKey);
 	}
 	
 	@Override

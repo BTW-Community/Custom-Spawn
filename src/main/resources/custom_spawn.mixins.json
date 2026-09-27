@@ -4,6 +4,7 @@
   "package": "net.dravigen.custom_spawn.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "IntCacheMx",
     "LoadingScreenRendererMixin",
     "MapGenStrongholdMixin",
     "MinecraftServerMixin",
